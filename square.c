@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "square.h"
+#include "joystick.h"
 
 struct square* square_create(short side_x, short side_y, short x, short y, short x_max, short y_max)
 {
@@ -20,6 +21,7 @@ struct square* square_create(short side_x, short side_y, short x, short y, short
 	new_square->side_y = side_y;
 	new_square->x = x;
 	new_square->y = y;
+	new_square->control = joystick_create();
 
 	return new_square;
 }
@@ -27,6 +29,7 @@ struct square* square_create(short side_x, short side_y, short x, short y, short
 
 void square_destroy(struct square *element)
 {
+	joystick_destroy(element->control);
 	free(element);
 }
 	
@@ -44,12 +47,12 @@ void square_move(struct square *element, short steps, char traj, short x_max, sh
 				element->x = element->x - steps*STEP;
 			break;
 		case 2: // movimento para cima
-			if (((element->y + steps*STEP) + element->side_y/2) <=  y_max)
-				element->y = element->y + steps*STEP;
-			break;
-		case 3: // movimento para baixo
 			if (((element->y - steps*STEP) - element->side_y/2) >= 0)
 				element->y = element->y - steps*STEP;
+			break;
+		case 3: // movimento para baixo
+			if (((element->y + steps*STEP) + element->side_y/2) <= y_max)
+				element->y = element->y + steps*STEP;
 			break;
 	}
 }

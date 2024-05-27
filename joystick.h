@@ -3,12 +3,14 @@
 
 // ESTRUTURA ==========================================
 
+// flags
+// 0 inativo, 1 ativo
 struct joystick {
 	char right;
 	char left;
 	char up;
 	char down;
-}
+};
 
 // FUNCOES ============================================
 
