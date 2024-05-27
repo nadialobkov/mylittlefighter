@@ -85,6 +85,10 @@ int main()
 	ALLEGRO_FONT *font = al_create_builtin_font(); // carrega fonte padrao
 	ALLEGRO_DISPLAY * disp = al_create_display(X_SCREEN, Y_SCREEN); // cria janela
 
+#ifdef DEBUG
+	printf("Estou debugando codigo\n");
+#endif
+
 	// adiciona eventos de teclado, display e tempo na fila de eventos
 	al_register_event_source(queue, al_get_keyboard_event_source());
 	al_register_event_source(queue, al_get_display_event_source(disp));
@@ -100,7 +104,9 @@ int main()
 	if (!player_1)
 		return 2;
 	
-
+	//ALLEGRO_BITMAP *figura = al_create_bitmap(player_1->side_x, player_1->side_y);
+	//al_set_target_bitmap(
+	//al_load_bitmap("pinkie.png"
 
 	ALLEGRO_EVENT event; // variavel que guarda um evento capturado
 	al_start_timer(timer); // inicializa o relogio
