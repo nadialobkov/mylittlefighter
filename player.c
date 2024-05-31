@@ -69,7 +69,15 @@ void player_draw(struct player *playerP)
 	short x = playerP->x - side_x/4;
 	short y = playerP->y - side_y/4;
 
-	al_draw_scaled_bitmap(playerP->bitmap[playerP->state], 0, 0, side_x, side_y, x, y, side_x/2, side_y/2, 0);		
+	short frame = playerP->state;
+	if (playerP->state == JUMP1)
+		frame = 7;
+	if (playerP->state == JUMP2 || playerP->state == JUMP4 || playerP->state == JUMP5)
+		frame = 5;
+	if (playerP->state == JUMP3)
+		frame = 6; 
+	printf("frame: %d\n", frame);
+	al_draw_scaled_bitmap(playerP->bitmap[frame], 0, 0, side_x, side_y, x, y, side_x/2, side_y/2, 0);		
 }
 
 
@@ -128,10 +136,31 @@ void player_update_state(struct player *playerP)
 		case JUMP1:
 			playerP->state = JUMP2;
 			break;
+
 		case JUMP2:
-			playerP->state = JUMP2;
+			playerP->state = JUMP3;
 			break;
-			
+
+		case JUMP3:
+			playerP->state = JUMP4;
+			break;
+
+		case JUMP4:
+			playerP->state = JUMP5;
+			break;
+
+		case JUMP5:
+			if (playerP->control->right)
+				playerP->state = RIGHT1;
+			else 
+			if (playerP->control->left)
+				playerP->state = LEFT1;
+			else
+			if (playerP->control->up)
+				playerP->state = JUMP1;
+			else
+				playerP->state = IDLE;
+			break;
 	}
 }
 		
@@ -156,6 +185,25 @@ void player_update_position(struct player *playerP)
 			break;
   		case LEFT2:
 			playerP->x = playerP->x - STEPS;
+			player_draw(playerP);
+			break;
+		case JUMP1:
+			player_draw(playerP);
+			break;
+		case JUMP2:
+			playerP->y = playerP->y - 2*STEPS;
+			player_draw(playerP);
+			break;
+		case JUMP3:
+			playerP->y = playerP->y - STEPS;
+			player_draw(playerP);
+			break;
+		case JUMP4:
+			playerP->y = playerP->y + STEPS;
+			player_draw(playerP);
+			break;
+		case JUMP5:
+			playerP->y = playerP->y + 2*STEPS;
 			player_draw(playerP);
 			break;
 	}
