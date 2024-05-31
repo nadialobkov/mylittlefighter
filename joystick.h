@@ -10,6 +10,7 @@ struct joystick {
 	char left;
 	char up;
 	char down;
+	char active;
 };
 
 // FUNCOES ============================================

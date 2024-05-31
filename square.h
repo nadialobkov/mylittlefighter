@@ -3,7 +3,7 @@
 
 #include "joystick.h"
 
-#define STEP 20
+#define STEP 10
 
 // ESTRUTURA ============================================================
 

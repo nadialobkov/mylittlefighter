@@ -4,6 +4,7 @@
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
 #include "square.h"
 
 #define X_SCREEN 540
@@ -13,15 +14,15 @@ char collision(struct square *elem1, struct square *elem2)
 {
 	if ( ( (((elem1->y + elem1->side_y /2) > (elem2->y - elem2->side_y /2)) && 
 		   ((elem2->y - elem2->side_y /2) > (elem1->y - elem1->side_y /2))) ||
-		   ((elem2->y + elem2->side_y /2) > (elem1->y - elem1->side_y /2)) &&
-		   ((elem1->y - elem1->side_y /2) > (elem2->y - elem2->side_y /2)) ) 
+		 ( ((elem2->y + elem2->side_y /2) > (elem1->y - elem1->side_y /2)) &&
+		   ((elem1->y - elem1->side_y /2) > (elem2->y - elem2->side_y /2))) ) 
 		
 		&&
 
 	     ( (((elem1->x + elem1->side_x /2) > (elem2->x - elem2->side_x /2)) && 
 		   ((elem2->x - elem2->side_x /2) > (elem1->x - elem1->side_x /2))) ||
-		   ((elem2->x + elem2->side_x /2) > (elem1->x - elem1->side_x /2)) &&
-		   ((elem1->x - elem1->side_x /2) > (elem2->x - elem2->side_x /2)) )   )
+		 ( ((elem2->x + elem2->side_x /2) > (elem1->x - elem1->side_x /2)) &&
+		   ((elem1->x - elem1->side_x /2) > (elem2->x - elem2->side_x /2)) ) ) )
 
 		return 1;
 
@@ -42,6 +43,7 @@ void update_position(struct square *player1, struct square *player2)
 			square_move(player1, -1, 1, X_SCREEN, Y_SCREEN);
 	}
 	if (player1->control->up) {
+		
 		square_move(player1, 1, 2, X_SCREEN, Y_SCREEN);
 		if (collision(player1, player2))
 			square_move(player1, -1, 2, X_SCREEN, Y_SCREEN);
@@ -104,9 +106,10 @@ int main()
 	if (!player_1)
 		return 2;
 	
-	//ALLEGRO_BITMAP *figura = al_create_bitmap(player_1->side_x, player_1->side_y);
-	//al_set_target_bitmap(
-	//al_load_bitmap("pinkie.png"
+	al_init_image_addon();
+	ALLEGRO_BITMAP *figura = al_load_bitmap("pinkie.png");
+	//al_create_bitmap(player_1->side_x, player_1->side_y);
+	//al_set_target_bitmap(figura);
 
 	ALLEGRO_EVENT event; // variavel que guarda um evento capturado
 	al_start_timer(timer); // inicializa o relogio
@@ -123,6 +126,7 @@ int main()
 			al_draw_filled_rectangle(player_1->x - player_1->side_x /2, player_1->y - player_1->side_y /2,
 									 player_1->x + player_1->side_x /2, player_1->y + player_1->side_y /2, 
 									 al_map_rgb(255, 102, 255));
+			al_draw_scaled_bitmap(figura, 0, 0, al_get_bitmap_width(figura), al_get_bitmap_height(figura), player_1->x - player_1->side_x /2, player_1->y - player_1->side_y /2, 50, 100, 0);
 
 			al_draw_filled_rectangle(player_2->x - player_2->side_x /2, player_2->y - player_2->side_y /2,
 									 player_2->x + player_2->side_x /2, player_2->y + player_2->side_y /2, 
@@ -152,6 +156,7 @@ int main()
 	al_destroy_font(font);
 	al_destroy_display(disp);
 	al_destroy_timer(timer);
+	al_destroy_bitmap(figura);
 	al_destroy_event_queue(queue);
 	square_destroy(player_1);
 	square_destroy(player_2);

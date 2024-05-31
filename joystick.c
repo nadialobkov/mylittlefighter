@@ -11,34 +11,39 @@ struct joystick *joystick_create()
 	new_js->left = 0;
 	new_js->up = 0;
 	new_js->down = 0;
+	new_js->active = 1;
 
 	return (new_js);
 }
 
 
-void joystick_destroy(struct joystick *element)
+void joystick_destroy(struct joystick *control)
 {
-	free(element);
+	free(control);
 }
 
 
-void joystick_right(struct joystick *element)
+void joystick_right(struct joystick *control)
 {
-	element->right = element->right ^ 1;
+	if (control->active)
+		control->right = control->right ^ 1;
 }
 
-void joystick_left(struct joystick *element)
+void joystick_left(struct joystick *control)
 {
-	element->left = element->left ^ 1;
+	if (control->active)
+		control->left = control->left ^ 1;
 }
 
-void joystick_up(struct joystick *element)
+void joystick_up(struct joystick *control)
 {
-	element->up = element->up ^ 1;
+	if (control->active)
+		control->up = control->up ^ 1;
 }
 
-void joystick_down(struct joystick *element)
+void joystick_down(struct joystick *control)
 {
-	element->down = element->down ^ 1;
+	if (control->active)
+		control->down = control->down ^ 1;
 }
 
