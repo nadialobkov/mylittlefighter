@@ -5,11 +5,14 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
-#include "square.h"
+
+#include "player.h"
+#include "box.h"
+#include "joystick.h"
 
 #define X_SCREEN 540
 #define Y_SCREEN 540 
-
+/*
 char collision(struct square *elem1, struct square *elem2)
 {
 	if ( ( (((elem1->y + elem1->side_y /2) > (elem2->y - elem2->side_y /2)) && 
@@ -75,14 +78,15 @@ void update_position(struct square *player1, struct square *player2)
 			square_move(player2, -1, 3, X_SCREEN, Y_SCREEN);
 	}
 }
-
+*/
 int main()
 {
     al_init(); // inicia requisitos da biblioteca
+	al_init_image_addon();
 	al_init_primitives_addon(); // biblioteca de figuras basicas
     al_install_keyboard(); // habilita entrada de eventos via teclado
 	
-	ALLEGRO_TIMER *timer = al_create_timer(1.0/ 30.0); // 30 fps
+	ALLEGRO_TIMER *timer = al_create_timer(1.0/ 5.0); // 30 fps
 	ALLEGRO_EVENT_QUEUE *queue = al_create_event_queue(); // cria fila de eventos
 	ALLEGRO_FONT *font = al_create_builtin_font(); // carrega fonte padrao
 	ALLEGRO_DISPLAY * disp = al_create_display(X_SCREEN, Y_SCREEN); // cria janela
@@ -96,20 +100,8 @@ int main()
 	al_register_event_source(queue, al_get_display_event_source(disp));
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 
+	struct player *player1 = player_create(PINKIE, 200, 300);
 
-	// criacao dos personagens
-	struct square *player_1 = square_create(50, 100, 150, Y_SCREEN/2, X_SCREEN, Y_SCREEN);
-	if (!player_1)
-		return 1;
-
-	struct square *player_2 = square_create(80, 120, X_SCREEN-150, Y_SCREEN/2, X_SCREEN, Y_SCREEN);
-	if (!player_1)
-		return 2;
-	
-	al_init_image_addon();
-	ALLEGRO_BITMAP *figura = al_load_bitmap("pinkie.png");
-	//al_create_bitmap(player_1->side_x, player_1->side_y);
-	//al_set_target_bitmap(figura);
 
 	ALLEGRO_EVENT event; // variavel que guarda um evento capturado
 	al_start_timer(timer); // inicializa o relogio
@@ -120,17 +112,8 @@ int main()
 		if (event.type == ALLEGRO_EVENT_TIMER) { // batida do relogio		
 
 			al_clear_to_color(al_map_rgb(0, 0, 0)); // pinta fundo preto
-
-			update_position(player_1, player_2);
-			// desenha os personagens (quadrilateros)
-			al_draw_filled_rectangle(player_1->x - player_1->side_x /2, player_1->y - player_1->side_y /2,
-									 player_1->x + player_1->side_x /2, player_1->y + player_1->side_y /2, 
-									 al_map_rgb(255, 102, 255));
-			al_draw_scaled_bitmap(figura, 0, 0, al_get_bitmap_width(figura), al_get_bitmap_height(figura), player_1->x - player_1->side_x /2, player_1->y - player_1->side_y /2, 50, 100, 0);
-
-			al_draw_filled_rectangle(player_2->x - player_2->side_x /2, player_2->y - player_2->side_y /2,
-									 player_2->x + player_2->side_x /2, player_2->y + player_2->side_y /2, 
-									 al_map_rgb(153, 102, 255));
+			player_update_state(player1);
+			player_update_position(player1);
 									 
 			al_flip_display();
 		}
@@ -138,14 +121,14 @@ int main()
 			// caso uma tecla foi pressionada ou solta
 			if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_KEY_UP)) {
 				// identificamos tecla e atalizamos o joystick do player
-				if (event.keyboard.keycode == ALLEGRO_KEY_A) joystick_left(player_1->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_D) joystick_right(player_1->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_W) joystick_up(player_1->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_S) joystick_down(player_1->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) joystick_left(player_2->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) joystick_right(player_2->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_UP) joystick_up(player_2->control);
-				else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) joystick_down(player_2->control);
+				if (event.keyboard.keycode == ALLEGRO_KEY_A) joystick_left(player1->control);
+				else if (event.keyboard.keycode == ALLEGRO_KEY_D) joystick_right(player1->control);
+				else if (event.keyboard.keycode == ALLEGRO_KEY_W) joystick_up(player1->control);
+				else if (event.keyboard.keycode == ALLEGRO_KEY_S) joystick_down(player1->control);
+				//else if (event.keyboard.keycode == ALLEGRO_KEY_LEFT) joystick_left(player_2->control);
+				//else if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) joystick_right(player_2->control);
+				//else if (event.keyboard.keycode == ALLEGRO_KEY_UP) joystick_up(player_2->control);
+				//else if (event.keyboard.keycode == ALLEGRO_KEY_DOWN) joystick_down(player_2->control);
 			}
 
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break;
@@ -156,10 +139,7 @@ int main()
 	al_destroy_font(font);
 	al_destroy_display(disp);
 	al_destroy_timer(timer);
-	al_destroy_bitmap(figura);
 	al_destroy_event_queue(queue);
-	square_destroy(player_1);
-	square_destroy(player_2);
-
+	player_destroy(player1);
 	return 0;
 }

@@ -3,9 +3,9 @@
 #include "box.h" 
 
 
-struct box_create(short x, short y, short side_x, short side_x, char active)
+struct box *box_create(short x, short y, short side_x, short side_y, char active)
 {
-	struct *new_box = malloc(sizeof(struct box));
+	struct box *new_box = malloc(sizeof(struct box));
 
 	new_box->x = x;
 	new_box->y = y;

@@ -1,6 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
+#include <allegro5/allegro5.h>
 #include <allegro5/allegro_image.h>
 #include "box.h"
 #include "joystick.h"
@@ -17,7 +18,12 @@
 #define LEFT2 4
 #define JUMP1 5
 #define JUMP2 6
-#define DOWN 7
+#define JUMP3 7
+#define JUMP4 8
+#define JUMP5 9
+#define DOWN 10
+
+#define STEPS 15
 
 // ESTRUTURA  ======================================================
 
@@ -30,13 +36,15 @@ struct player {
 	struct box *hitbox;
 	struct joystick *control;
 	ALLEGRO_BITMAP **bitmap;
-}
+};
 
 // FUNCOES =========================================================
 
-struct player_create(char id, short state, short health, short x, short y);
+struct player *player_create(char id, short x, short y);
 
 void player_destroy(struct player *playerD);
+
+void player_update_state(struct player *playerP);
 
 void player_update_position(struct player *playerP);
 
