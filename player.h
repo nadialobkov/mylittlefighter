@@ -21,9 +21,17 @@
 #define JUMP3 7
 #define JUMP4 8
 #define JUMP5 9
-#define DOWN 10
+#define DOWN1 10
 
 #define STEPS 15
+
+//direcoes
+#define RIGHT 0
+#define LEFT 1
+#define UP 2
+#define DOWN 3
+
+#define RESIZE 6
 
 // ESTRUTURA  ======================================================
 

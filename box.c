@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <allegro5/allegro_primitives.h>
 #include "box.h" 
+#include "streetfighter.h"
 
 
 struct box *box_create(short x, short y, short side_x, short side_y, char active)
@@ -22,6 +24,22 @@ void box_destroy(struct box *box)
 	free(box);
 }
 
+void box_draw(struct box *box1)
+{
+	al_draw_filled_rectangle(box1->x - box1->side_x /2, box1->y - box1->side_y /2,
+									 box1->x + box1->side_x /2, box1->y + box1->side_y /2, 
+									 al_map_rgb(255, 102, 255));		
+}
+
+char box_valid_position(struct box *box1)
+{
+	if ((box1->x - box1->side_x /2 < 0) || (box1->y - box1->side_y /2 < 0) || 
+		(box1->x + box1->side_x /2 > X_SCREEN) || (box1->y + box1->side_y /2 > Y_SCREEN) )
+
+		return 0;	
+	else
+		return 1;
+}
 
 char box_collision(struct box *box1, struct box *box2)
 {

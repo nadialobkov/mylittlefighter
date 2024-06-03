@@ -6,12 +6,14 @@
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 
+#include "streetfighter.h"
 #include "player.h"
 #include "box.h"
 #include "joystick.h"
 
 #define X_SCREEN 540
 #define Y_SCREEN 540 
+
 /*
 char collision(struct square *elem1, struct square *elem2)
 {
@@ -111,7 +113,7 @@ int main()
 
 		if (event.type == ALLEGRO_EVENT_TIMER) { // batida do relogio		
 
-			al_clear_to_color(al_map_rgb(0, 0, 0)); // pinta fundo preto
+			al_clear_to_color(al_map_rgb(30, 30, 50)); // pinta fundo preto
 			player_update_state(player1);
 			player_update_position(player1);
 									 

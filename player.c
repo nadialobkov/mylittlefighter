@@ -6,6 +6,7 @@
 #include "player.h"
 #include "box.h"
 #include "joystick.h"
+#include "streetfighter.h"
 
 ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap)
 {
@@ -17,7 +18,7 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap)
 	bitmap[5] = al_load_bitmap("ponei5.png");
 	bitmap[6] = al_load_bitmap("ponei6.png");
 	bitmap[7] = al_load_bitmap("ponei7.png");
-	
+
 	return (bitmap);
 }
 
@@ -32,14 +33,11 @@ struct player *player_create(char id, short x, short y)
 	new_player->x = x;
 	new_player->y = y;
 
-	new_player->bitmap = malloc(sizeof(ALLEGRO_BITMAP*));
-	//for (short i = 0; i <= 7; i++) {
-	//	new_player->bitmap[i] = malloc(sizeof(ALLEGRO_BITMAP));
-	//}
+	new_player->bitmap = malloc(10 * sizeof(ALLEGRO_BITMAP*));
 	new_player->bitmap = player_load_bitmap(new_player->bitmap);	
 
-	short side_x = al_get_bitmap_width(new_player->bitmap[0]);
-	short side_y = al_get_bitmap_height(new_player->bitmap[0]);
+	short side_x = al_get_bitmap_width(new_player->bitmap[0]) /RESIZE;
+	short side_y = al_get_bitmap_height(new_player->bitmap[0]) /RESIZE;
 
 	new_player->hitbox = box_create(x, y, side_x, side_y, 1);
 	new_player->control = joystick_create();
@@ -51,7 +49,7 @@ void player_destroy(struct player *playerD)
 {
 	joystick_destroy(playerD->control);
 	box_destroy(playerD->hitbox);
-	
+
 	for (short i = 0; i <= 7; i++) {
 		al_destroy_bitmap(playerD->bitmap[i]);
 	}
@@ -63,11 +61,6 @@ void player_destroy(struct player *playerD)
 
 void player_draw(struct player *playerP)
 {
-	short side_x = al_get_bitmap_width(playerP->bitmap[playerP->state]);
-	short side_y = al_get_bitmap_height(playerP->bitmap[playerP->state]);
-	
-	short x = playerP->x - side_x/4;
-	short y = playerP->y - side_y/4;
 
 	short frame = playerP->state;
 	if (playerP->state == JUMP1)
@@ -76,10 +69,61 @@ void player_draw(struct player *playerP)
 		frame = 5;
 	if (playerP->state == JUMP3)
 		frame = 6; 
-	printf("frame: %d\n", frame);
-	al_draw_scaled_bitmap(playerP->bitmap[frame], 0, 0, side_x, side_y, x, y, side_x/2, side_y/2, 0);		
+
+	//printf("state: %d\n", playerP->state);
+	//printf("frame: %d\n", frame);
+
+	short side_x = al_get_bitmap_width(playerP->bitmap[frame]);
+	short side_y = al_get_bitmap_height(playerP->bitmap[frame]);
+	short x = playerP->x - side_x/(2*RESIZE);
+	short y = playerP->y - side_y/(2*RESIZE);
+
+	al_draw_scaled_bitmap(playerP->bitmap[frame], 0, 0, side_x, side_y, x, y, side_x/RESIZE, side_y/RESIZE, 0);		
 }
 
+void player_move(struct player *playerP, short steps, short direction)
+{
+	printf("box x: %d\n", playerP->hitbox->x);
+	printf("box y: %d\n", playerP->hitbox->y);
+	switch (direction) {
+
+		case RIGHT:	
+			playerP->hitbox->x = playerP->hitbox->x + steps * STEPS;
+			printf("valido: %d\n", box_valid_position(playerP->hitbox));
+			if (box_valid_position(playerP->hitbox)){
+				printf("step: %d\n", steps);
+				playerP->x = playerP->x + (steps * STEPS);
+			}
+			else
+				playerP->hitbox->x = playerP->hitbox->x - steps * STEPS;
+			break;
+
+		case LEFT:	
+			playerP->hitbox->x = playerP->hitbox->x - steps * STEPS;
+			if (box_valid_position(playerP->hitbox)){
+				printf("oiie\n");
+				playerP->x = playerP->x - steps * STEPS;
+			}
+			else
+				playerP->hitbox->x = playerP->hitbox->x + steps * STEPS;
+			break;
+
+		case UP:	
+			playerP->hitbox->y = playerP->hitbox->y - steps * STEPS;
+			if (box_valid_position(playerP->hitbox))
+				playerP->y = playerP->y - steps * STEPS;
+			else
+				playerP->hitbox->y = playerP->hitbox->y + steps * STEPS;
+			break;
+		case DOWN:	
+			playerP->hitbox->y = playerP->hitbox->y + steps * STEPS;
+			if (box_valid_position(playerP->hitbox))
+				playerP->y = playerP->y + steps * STEPS;
+			else
+				playerP->hitbox->y = playerP->hitbox->y - steps * STEPS;
+			break;
+	}
+}
 
 void player_update_state(struct player *playerP)
 {
@@ -92,11 +136,11 @@ void player_update_state(struct player *playerP)
 			if (playerP->control->right)
 				playerP->state = RIGHT1;
 			else
-			if (playerP->control->left)
-				playerP->state = LEFT1;
-			else
-			if (playerP->control->up)
-				playerP->state = JUMP1;
+				if (playerP->control->left)
+					playerP->state = LEFT1;
+				else
+					if (playerP->control->up)
+						playerP->state = JUMP1;
 			break;
 
 		case RIGHT1:
@@ -107,30 +151,30 @@ void player_update_state(struct player *playerP)
 			if (playerP->control->right)
 				playerP->state = RIGHT1;
 			else 
-			if (playerP->control->left)
-				playerP->state = LEFT1;
-			else
-			if (playerP->control->up)
-				playerP->state = JUMP1;
-			else
-				playerP->state = IDLE;
+				if (playerP->control->left)
+					playerP->state = LEFT1;
+				else
+					if (playerP->control->up)
+						playerP->state = JUMP1;
+					else
+						playerP->state = IDLE;
 			break;
 
 		case LEFT1:
 			playerP->state = LEFT2;
 			break;
-		
+
 		case LEFT2:
 			if (playerP->control->right)
 				playerP->state = RIGHT1;
 			else 
-			if (playerP->control->left)
-				playerP->state = LEFT1;
-			else
-			if (playerP->control->up)
-				playerP->state = JUMP1;
-			else
-				playerP->state = IDLE;
+				if (playerP->control->left)
+					playerP->state = LEFT1;
+				else
+					if (playerP->control->up)
+						playerP->state = JUMP1;
+					else
+						playerP->state = IDLE;
 			break;
 
 		case JUMP1:
@@ -153,57 +197,67 @@ void player_update_state(struct player *playerP)
 			if (playerP->control->right)
 				playerP->state = RIGHT1;
 			else 
-			if (playerP->control->left)
-				playerP->state = LEFT1;
-			else
-			if (playerP->control->up)
-				playerP->state = JUMP1;
-			else
-				playerP->state = IDLE;
+				if (playerP->control->left)
+					playerP->state = LEFT1;
+				else
+					if (playerP->control->up)
+						playerP->state = JUMP1;
+					else
+						playerP->state = IDLE;
 			break;
 	}
 }
-		
+
 void player_update_position(struct player *playerP)
 {
 	switch (playerP->state) {
 
 		case IDLE:
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
-  		case RIGHT1:
-			playerP->x = playerP->x + STEPS;
+		case RIGHT1:
+			player_move(playerP, 1, RIGHT);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
-  		case RIGHT2:
-			playerP->x = playerP->x + STEPS;
+		case RIGHT2:
+			player_move(playerP, 1, RIGHT);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
-  		case LEFT1:
-			playerP->x = playerP->x - STEPS;
+		case LEFT1:
+			player_move(playerP, 1, LEFT);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
-  		case LEFT2:
-			playerP->x = playerP->x - STEPS;
+		case LEFT2:
+			player_move(playerP, 1, LEFT);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 		case JUMP1:
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 		case JUMP2:
-			playerP->y = playerP->y - 2*STEPS;
+			player_move(playerP, 2, UP);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 		case JUMP3:
-			playerP->y = playerP->y - STEPS;
+			player_move(playerP, 2, UP);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 		case JUMP4:
-			playerP->y = playerP->y + STEPS;
+			player_move(playerP, 2, DOWN);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 		case JUMP5:
-			playerP->y = playerP->y + 2*STEPS;
+			player_move(playerP, 2, DOWN);
+			box_draw(playerP->hitbox);
 			player_draw(playerP);
 			break;
 	}
