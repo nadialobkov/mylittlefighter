@@ -70,8 +70,10 @@ void player_draw(struct player *playerP)
 	if (playerP->state == JUMP3)
 		frame = 6; 
 
-	//printf("state: %d\n", playerP->state);
-	//printf("frame: %d\n", frame);
+#ifdef DEBUG
+	printf("state: %d\n", playerP->state);
+	printf("frame: %d\n", frame);
+#endif
 
 	short side_x = al_get_bitmap_width(playerP->bitmap[frame]);
 	short side_y = al_get_bitmap_height(playerP->bitmap[frame]);
@@ -83,15 +85,15 @@ void player_draw(struct player *playerP)
 
 void player_move(struct player *playerP, short steps, short direction)
 {
+#ifdef DEBUG
 	printf("box x: %d\n", playerP->hitbox->x);
 	printf("box y: %d\n", playerP->hitbox->y);
+#endif
 	switch (direction) {
 
 		case RIGHT:	
 			playerP->hitbox->x = playerP->hitbox->x + steps * STEPS;
-			printf("valido: %d\n", box_valid_position(playerP->hitbox));
 			if (box_valid_position(playerP->hitbox)){
-				printf("step: %d\n", steps);
 				playerP->x = playerP->x + (steps * STEPS);
 			}
 			else
@@ -101,7 +103,6 @@ void player_move(struct player *playerP, short steps, short direction)
 		case LEFT:	
 			playerP->hitbox->x = playerP->hitbox->x - steps * STEPS;
 			if (box_valid_position(playerP->hitbox)){
-				printf("oiie\n");
 				playerP->x = playerP->x - steps * STEPS;
 			}
 			else
