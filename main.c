@@ -78,9 +78,11 @@ int main()
 		if (event.type == ALLEGRO_EVENT_MOUSE_AXES){
 			mouse_x = event.mouse.x;
 			mouse_y = event.mouse.y;
-			if (button_pressed(botao, mouse_x, mouse_y, event))
-				printf("oieee\n");
 		}
+			if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
+				
+				if (button_pressed(botao, mouse_x, mouse_y, event))
+					printf("oieee\n");
 		if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) break;
 
 	}
