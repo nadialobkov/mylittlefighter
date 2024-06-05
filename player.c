@@ -10,15 +10,14 @@
 
 ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap)
 {
-	bitmap[0] = al_load_bitmap("ponei0.png");
-	bitmap[1] = al_load_bitmap("ponei1.png");
-	bitmap[2] = al_load_bitmap("ponei2.png");
-	bitmap[3] = al_load_bitmap("ponei3.png");
-	bitmap[4] = al_load_bitmap("ponei4.png");
-	bitmap[5] = al_load_bitmap("ponei5.png");
-	bitmap[6] = al_load_bitmap("ponei6.png");
-	bitmap[7] = al_load_bitmap("ponei7.png");
+	char *string = malloc(sizeof(char) * 30);
 
+	for (short i = 0; i <= 7; i++) {
+		sprintf(string, "ponei%d.png", i);
+		bitmap[i] = al_load_bitmap(string);
+	}
+
+	free(string);
 	return (bitmap);
 }
 

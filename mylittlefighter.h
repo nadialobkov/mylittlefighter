@@ -1,0 +1,42 @@
+#ifndef _MYLITTLEFIGHTER_H_
+#define _MYLITTLEFIGHTER_H_
+
+
+#define X_SCREEN 1920
+#define Y_SCREEN 1080
+#define FPS 5
+
+
+enum Game_state {
+	MENU_START,
+	MENU_PLAYER_SEL,
+	MENU_BACK_SEL,
+};
+
+struct mlf {
+	enum Game_state state;
+	struct player *player1;
+	struct player *player2;
+	ALLEGRO_EVENT event;
+	ALLEGRO_EVENT_QUEUE *queue;
+	ALLEGRO_DISPLAY *disp;
+	ALLEGRO_TIMER *timer;
+	short mouse_x;
+	short mouse_y;
+};
+
+// ============================================
+
+
+struct mlf *mlf_create_game();
+
+void mlf_destroy_game(struct mlf *game);
+
+void draw_image(char *filename, short x, short y, float resize);
+
+void mlf_menu_start(struct mlf *game);
+
+void mlf_update_game(struct mlf *game);
+
+
+#endif
