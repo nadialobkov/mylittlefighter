@@ -32,7 +32,9 @@ struct mlf *mlf_create_game()
 	game->queue = al_create_event_queue();
 	game->timer = al_create_timer(1.0/ FPS);
 	game->disp = al_create_display(X_SCREEN, Y_SCREEN);
-
+	game->mouse_x = 0;
+	game->mouse_y = 0;
+		
 	return game;
 }
 
@@ -50,9 +52,9 @@ void mlf_destroy_game(struct mlf *game)
 
 void mlf_menu_start(struct mlf *game)
 {
-	struct button *button_start = button_create("button_start.png", 960, 712);
+	struct button *button_start = button_create("button_start.png", X_SCREEN /2, Y_SCREEN /2, 1);
 
-	while (1) {
+	while (game->state == MENU_START) {
 		
 		al_wait_for_event(game->queue, &(game->event));
 		
@@ -61,8 +63,8 @@ void mlf_menu_start(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
-			draw_image("background0.png", 0, 0, 1);
-			draw_image("mlf_logo.png", 960, 270, 1);
+			draw_image("background_castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
+			draw_image("mlf_logo.png", X_SCREEN /2, Y_SCREEN /5, 1);
 			button_update(button_start, game->mouse_x, game->mouse_y);
 			al_flip_display();	
 		}
@@ -71,7 +73,50 @@ void mlf_menu_start(struct mlf *game)
 				game->state = MENU_PLAYER_SEL;
 			}
 		}
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
+		}
 	}
+
+	button_destroy(button_start);
+}
+
+void mlf_menu_player_sel(struct mlf *game)
+{
+	struct button *p1_icon0 = button_create("icon_pinkie.png", X_SCREEN /4, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+	struct button *p1_icon1 = button_create("icon_rarity.png", X_SCREEN /4 + X_SCREEN /15, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+
+	while (game->state == MENU_PLAYER_SEL) {
+		
+		al_wait_for_event(game->queue, &(game->event));
+		
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			game->mouse_x = game->event.mouse.x;
+			game->mouse_y = game->event.mouse.y;
+		}
+		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
+			draw_image("background_castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
+			draw_image("mlf_logo.png", X_SCREEN /10, Y_SCREEN /8, 0.5);
+			draw_image("player_display_pink.png", X_SCREEN /3, Y_SCREEN /2, 1);
+			draw_image("player_display_green.png", X_SCREEN *2 /3, Y_SCREEN /2 -60, 1);
+			draw_image("player1_pinkie.png", X_SCREEN /3, Y_SCREEN /3 -60, 1);
+			draw_image("player2_changeling.png", X_SCREEN *2 /3, Y_SCREEN /3 -60, 1);
+			draw_image("text_choose_your_player.png", X_SCREEN /2, Y_SCREEN /10, 1);
+			button_update(p1_icon0, game->mouse_x, game->mouse_y);
+			button_update(p1_icon1, game->mouse_x, game->mouse_y);
+			al_flip_display();	
+		}
+//		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+//				game->state = MENU_PLAYER_SEL;
+//			}
+//		}
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
+		}
+	}
+
+	button_destroy(p1_icon0);
+	button_destroy(p1_icon1);
 }
 
 void mlf_update_game(struct mlf *game)
@@ -81,6 +126,10 @@ void mlf_update_game(struct mlf *game)
 		case MENU_START:
 			mlf_menu_start(game);
 			break;
+		case MENU_PLAYER_SEL:
+			mlf_menu_player_sel(game);
+			break;
+
 	}
 }
 	

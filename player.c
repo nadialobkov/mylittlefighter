@@ -32,7 +32,7 @@ struct player *player_create(char id, short x, short y)
 	new_player->x = x;
 	new_player->y = y;
 
-	new_player->bitmap = malloc(10 * sizeof(ALLEGRO_BITMAP*));
+	new_player->bitmap = malloc(8 * sizeof(ALLEGRO_BITMAP*));
 	new_player->bitmap = player_load_bitmap(new_player->bitmap);	
 
 	short side_x = al_get_bitmap_width(new_player->bitmap[0]) /RESIZE;

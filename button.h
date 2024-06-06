@@ -6,10 +6,11 @@ struct button {
 	short y;
 	short side_x;
 	short side_y;
+	float resize;
 	ALLEGRO_BITMAP *bitmap;
 };
 
-struct button *button_create(char *filename, short x, short y);
+struct button *button_create(char *filename, short x, short y, float resize);
 
 void button_destroy(struct button *b);
 

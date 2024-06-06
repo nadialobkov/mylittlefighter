@@ -36,6 +36,8 @@ void draw_image(char *filename, short x, short y, float resize);
 
 void mlf_menu_start(struct mlf *game);
 
+void mlf_menu_player_sel(struct mlf *game);
+
 void mlf_update_game(struct mlf *game);
 
 
