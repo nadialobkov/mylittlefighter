@@ -52,7 +52,7 @@ void mlf_destroy_game(struct mlf *game)
 
 void mlf_menu_start(struct mlf *game)
 {
-	struct button *button_start = button_create("button_start.png", X_SCREEN /2, Y_SCREEN /2, 1);
+	struct button *button_start = button_create("./sprites/buttons/button_start.png", X_SCREEN /2, Y_SCREEN /2, 1);
 
 	while (game->state == MENU_START) {
 		
@@ -63,8 +63,8 @@ void mlf_menu_start(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
-			draw_image("background_castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
-			draw_image("mlf_logo.png", X_SCREEN /2, Y_SCREEN /5, 1);
+			draw_image("./sprites/backgrounds/castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
+			draw_image("./sprites/menu/mlf_logo.png", X_SCREEN /2, Y_SCREEN /5, 1);
 			button_update(button_start, game->mouse_x, game->mouse_y);
 			al_flip_display();	
 		}
@@ -83,8 +83,10 @@ void mlf_menu_start(struct mlf *game)
 
 void mlf_menu_player_sel(struct mlf *game)
 {
-	struct button *p1_icon0 = button_create("icon_pinkie.png", X_SCREEN /4, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
-	struct button *p1_icon1 = button_create("icon_rarity.png", X_SCREEN /4 + X_SCREEN /15, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+	struct button *p1_icon0 = button_create("./sprites/buttons/icon_pinkie.png", X_SCREEN /4, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+	struct button *p1_icon1 = button_create("./sprites/buttons/icon_rarity.png", X_SCREEN /4 + X_SCREEN /15, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+	struct button *p2_icon0 = button_create("./sprites/buttons/icon_pinkie_ch.png", X_SCREEN /2 + X_SCREEN /15 + 40, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
+	struct button *p2_icon1 = button_create("./sprites/buttons/icon_rarity_ch.png", X_SCREEN /2 + X_SCREEN *2/15 + 40, Y_SCREEN /2 + Y_SCREEN/15, 0.1);
 
 	while (game->state == MENU_PLAYER_SEL) {
 		
@@ -95,21 +97,34 @@ void mlf_menu_player_sel(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
-			draw_image("background_castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
-			draw_image("mlf_logo.png", X_SCREEN /10, Y_SCREEN /8, 0.5);
-			draw_image("player_display_pink.png", X_SCREEN /3, Y_SCREEN /2, 1);
-			draw_image("player_display_green.png", X_SCREEN *2 /3, Y_SCREEN /2 -60, 1);
-			draw_image("player1_pinkie.png", X_SCREEN /3, Y_SCREEN /3 -60, 1);
-			draw_image("player2_changeling.png", X_SCREEN *2 /3, Y_SCREEN /3 -60, 1);
-			draw_image("text_choose_your_player.png", X_SCREEN /2, Y_SCREEN /10, 1);
+			draw_image("./sprites/backgrounds/castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
+			draw_image("./sprites/menu/mlf_logo.png", X_SCREEN /10, Y_SCREEN /8, 0.5);
+			draw_image("./sprites/menu/player_display_pink.png", X_SCREEN /3, Y_SCREEN /2, 1);
+			draw_image("./sprites/menu/player_display_green.png", X_SCREEN *2 /3, Y_SCREEN /2 -60, 1);
+			draw_image("./sprites/menu/player1_pinkie.png", X_SCREEN /3, Y_SCREEN /3 -60, 1);
+			draw_image("./sprites/menu/player2_changeling.png", X_SCREEN *2 /3, Y_SCREEN /3 -60, 1);
+			draw_image("./sprites/menu/text_choose_your_player.png", X_SCREEN /2, Y_SCREEN /10, 1);
 			button_update(p1_icon0, game->mouse_x, game->mouse_y);
 			button_update(p1_icon1, game->mouse_x, game->mouse_y);
+			button_update(p2_icon0, game->mouse_x, game->mouse_y);
+			button_update(p2_icon1, game->mouse_x, game->mouse_y);
 			al_flip_display();	
 		}
-//		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-//				game->state = MENU_PLAYER_SEL;
-//			}
-//		}
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+			if (button_pressed(p1_icon0, game->mouse_x, game->mouse_y, game->event)) {
+				game->player1->id = PINKIE;
+			}
+			if (button_pressed(p1_icon1, game->mouse_x, game->mouse_y, game->event)) {
+				game->player1->id = RARITY;
+			}
+			if (button_pressed(p2_icon0, game->mouse_x, game->mouse_y, game->event)) {
+				game->player2->id = PINKIE;
+			}
+			if (button_pressed(p2_icon1, game->mouse_x, game->mouse_y, game->event)) {
+				game->player2->id = RARITY;
+			}
+
+		}
 		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			break;
 		}
@@ -117,6 +132,8 @@ void mlf_menu_player_sel(struct mlf *game)
 
 	button_destroy(p1_icon0);
 	button_destroy(p1_icon1);
+	button_destroy(p2_icon0);
+	button_destroy(p2_icon1);
 }
 
 void mlf_update_game(struct mlf *game)

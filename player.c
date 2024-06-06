@@ -22,11 +22,11 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap)
 }
 
 
-struct player *player_create(char id, short x, short y)
+struct player *player_create(short x, short y)
 {
 	struct player *new_player = malloc(sizeof(struct player));
 
-	new_player->id = id;
+	new_player->id = -1;
 	new_player->state = IDLE;
 	new_player->health = 100;
 	new_player->x = x;
@@ -46,13 +46,22 @@ struct player *player_create(char id, short x, short y)
 
 void player_destroy(struct player *playerD)
 {
-	joystick_destroy(playerD->control);
-	box_destroy(playerD->hitbox);
+	if (!playerD)
+		return;
 
-	for (short i = 0; i <= 7; i++) {
-		al_destroy_bitmap(playerD->bitmap[i]);
+	if (playerD->control)
+		joystick_destroy(playerD->control);
+
+	if (playerD->hitbox)
+		box_destroy(playerD->hitbox);
+	
+	if (playerD->bitmap) {
+		for (short i = 0; i <= 7; i++) {
+			if (playerD->bitmap[i])
+				al_destroy_bitmap(playerD->bitmap[i]);
+		}
+		free(playerD->bitmap);
 	}
-	free(playerD->bitmap);
 
 	free(playerD);
 }

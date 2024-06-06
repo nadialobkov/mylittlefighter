@@ -48,7 +48,7 @@ struct player {
 
 // FUNCOES =========================================================
 
-struct player *player_create(char id, short x, short y);
+struct player *player_create(short x, short y);
 
 void player_destroy(struct player *playerD);
 
