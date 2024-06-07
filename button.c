@@ -25,7 +25,12 @@ struct button *button_create(char *filename, short x, short y, float resize)
 
 void button_destroy(struct button *b)
 {
-	al_destroy_bitmap(b->bitmap);
+	if (!b)
+		return;
+
+	if (b->bitmap)
+		al_destroy_bitmap(b->bitmap);
+
 	free(b);
 }
 

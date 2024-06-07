@@ -41,6 +41,7 @@ struct player {
 	short health;
 	short x;
 	short y;
+	float resize;
 	struct box *hitbox;
 	struct joystick *control;
 	ALLEGRO_BITMAP **bitmap;
@@ -48,7 +49,7 @@ struct player {
 
 // FUNCOES =========================================================
 
-struct player *player_create(short x, short y);
+struct player *player_create(short x, short y, float resize);
 
 void player_destroy(struct player *playerD);
 

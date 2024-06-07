@@ -22,7 +22,7 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap)
 }
 
 
-struct player *player_create(short x, short y)
+struct player *player_create(short x, short y, float resize)
 {
 	struct player *new_player = malloc(sizeof(struct player));
 
@@ -31,12 +31,13 @@ struct player *player_create(short x, short y)
 	new_player->health = 100;
 	new_player->x = x;
 	new_player->y = y;
+	new_player->resize = resize;
 
 	new_player->bitmap = malloc(8 * sizeof(ALLEGRO_BITMAP*));
 	new_player->bitmap = player_load_bitmap(new_player->bitmap);	
 
-	short side_x = al_get_bitmap_width(new_player->bitmap[0]) /RESIZE;
-	short side_y = al_get_bitmap_height(new_player->bitmap[0]) /RESIZE;
+	short side_x = al_get_bitmap_width(new_player->bitmap[0]) * resize;
+	short side_y = al_get_bitmap_height(new_player->bitmap[0]) * resize;
 
 	new_player->hitbox = box_create(x, y, side_x, side_y, 1);
 	new_player->control = joystick_create();
@@ -88,7 +89,7 @@ void player_draw(struct player *playerP)
 	short x = playerP->x - side_x/(2*RESIZE);
 	short y = playerP->y - side_y/(2*RESIZE);
 
-	al_draw_scaled_bitmap(playerP->bitmap[frame], 0, 0, side_x, side_y, x, y, side_x/RESIZE, side_y/RESIZE, 0);		
+	al_draw_scaled_bitmap(playerP->bitmap[frame], 0, 0, side_x, side_y, x, y, side_x * playerP->resize, side_y * playerP->resize, 0);		
 }
 
 void player_move(struct player *playerP, short steps, short direction)

@@ -33,8 +33,9 @@ int main()
 	
 	al_start_timer(game->timer);
 
-	mlf_menu_start(game);
-	mlf_menu_player_sel(game);
+	while (game->event.type != ALLEGRO_EVENT_DISPLAY_CLOSE) {
+		mlf_update_game(game);
+	}
 
 	mlf_destroy_game(game);
 

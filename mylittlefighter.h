@@ -13,10 +13,17 @@ enum Game_state {
 	MENU_BACK_SEL,
 };
 
+enum Backgrounds {
+	CASTLE,
+	PONYVILLE,
+	CLOUDSDALE,
+};
+
 struct mlf {
 	enum Game_state state;
 	struct player *player1;
 	struct player *player2;
+	enum Backgrounds back;
 	ALLEGRO_EVENT event;
 	ALLEGRO_EVENT_QUEUE *queue;
 	ALLEGRO_DISPLAY *disp;
