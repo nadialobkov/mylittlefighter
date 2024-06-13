@@ -11,6 +11,7 @@ enum Game_state {
 	MENU_START,
 	MENU_PLAYER_SEL,
 	MENU_BACK_SEL,
+	START_FIGHT,
 };
 
 enum Backgrounds {
