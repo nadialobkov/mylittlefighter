@@ -47,3 +47,4 @@ void joystick_down(struct joystick *control)
 		control->down = control->down ^ 1;
 }
 
+

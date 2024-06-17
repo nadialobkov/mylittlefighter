@@ -116,9 +116,9 @@ void mlf_menu_player_sel(struct mlf *game)
 	struct button *next = button_create("./sprites/buttons/next.png", X_SCREEN*11/12, Y_SCREEN*10/12, 1);
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
-	ALLEGRO_BITMAP *player_display_pink("./sprites/menu/player_display_pink.png");
-	ALLEGRO_BITMAP *player_display_green("./sprites/menu/player_display_green.png");
-	ALLEGRO_BITMAP *player_1_pinkie(
+	ALLEGRO_BITMAP *choose_player_display = al_load_bitmap("./sprites/menu/choose_char.png");
+	ALLEGRO_BITMAP *text_pinkie = al_load_bitmap("./sprites/text/pinkie_pie.png");
+	ALLEGRO_BITMAP *text_rarity = al_load_bitmap("./sprites/text/rarity.png");
 
 
 	while (game->state == MENU_PLAYER_SEL) {
@@ -130,13 +130,9 @@ void mlf_menu_player_sel(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
-			draw_image_resized(castle, X_SCREEN /2, Y_SCREEN /2, 1);
-			draw_image_resized(mlf_logo, X_SCREEN /10, Y_SCREEN /8, 0.5);
-			draw_image_resized(player_display_pink, X_SCREEN /3, Y_SCREEN /2, 1);
-			draw_image_resized(, X_SCREEN *2 /3, Y_SCREEN /2 -60, 1);
-			draw_image_resized("./sprites/menu/player1_pinkie.png", X_SCREEN /3, Y_SCREEN /3 -60, 1);
-			draw_image_resized("./sprites/menu/player2_changeling.png", X_SCREEN *2 /3, Y_SCREEN /3 -60, 1);
-			draw_image_resized("./sprites/menu/text_choose_your_player.png", X_SCREEN /2, Y_SCREEN /10, 1);
+			draw_image_resized(castle, X_SCREEN*0.5, Y_SCREEN*0.5, 1);
+			draw_image_resized(mlf_logo, X_SCREEN*0.1, Y_SCREEN*0.12, 0.5);
+			draw_image_resized(choose_player_display, X_SCREEN*0.5, Y_SCREEN*0.45, 1);
 			button_update(back, game->mouse_x, game->mouse_y);
 			button_update(p1_icon0, game->mouse_x, game->mouse_y);
 			button_update(p1_icon1, game->mouse_x, game->mouse_y);
@@ -144,13 +140,13 @@ void mlf_menu_player_sel(struct mlf *game)
 			button_update(p2_icon1, game->mouse_x, game->mouse_y);
 
 			if (game->player1->id == PINKIE)
-				draw_image_resized("./sprites/text/pinkie_pie.png", X_SCREEN/3, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_pinkie, X_SCREEN/3, Y_SCREEN*0.84, 1);
 			if (game->player2->id == PINKIE)
-				draw_image_resized("./sprites/text/pinkie_pie.png", X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_pinkie, X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
 			if (game->player1->id == RARITY)
-				draw_image_resized("./sprites/text/rarity.png", X_SCREEN/3, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_rarity, X_SCREEN/3, Y_SCREEN*8.4/10, 1);
 			if (game->player2->id == RARITY)
-				draw_image_resized("./sprites/text/rarity.png", X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_rarity, X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
 
 			if ((game->player1->id != -1) && (game->player2->id != -1))
 				button_update(next, game->mouse_x, game->mouse_y);
@@ -192,6 +188,9 @@ void mlf_menu_player_sel(struct mlf *game)
 	button_destroy(p2_icon1);
 	al_destroy_bitmap(castle);
 	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(choose_player_display);
+	al_destroy_bitmap(text_pinkie);
+	al_destroy_bitmap(text_rarity);
 }
 
 void mlf_menu_back_sel(struct mlf *game)
@@ -201,6 +200,12 @@ void mlf_menu_back_sel(struct mlf *game)
 	struct button *castle = button_create("./sprites/buttons/icon_castle.png", X_SCREEN/4, Y_SCREEN/2, 0.4);
 	struct button *ponyville = button_create("./sprites/buttons/icon_ponyville.png", X_SCREEN/2, Y_SCREEN/2, 0.4);
 	struct button *cloudsdale = button_create("./sprites/buttons/icon_sky.png", X_SCREEN*3/4, Y_SCREEN/2, 0.4);
+	ALLEGRO_BITMAP *castle_back = al_load_bitmap("./sprites/backgrounds/castle.png");
+	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
+	ALLEGRO_BITMAP *choose_background = al_load_bitmap("./sprites/text/choose_your_background.png");
+	ALLEGRO_BITMAP *text_castle = al_load_bitmap("./sprites/text/castle_of_friendship.png");
+	ALLEGRO_BITMAP *text_ponyville = al_load_bitmap("./sprites/text/ponyville.png");
+	ALLEGRO_BITMAP *text_cloudsdale = al_load_bitmap("./sprites/text/cloudsdale.png");
 
 	while (game->state == MENU_BACK_SEL) {
 		
@@ -211,9 +216,9 @@ void mlf_menu_back_sel(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {	
-			draw_image_resized("./sprites/backgrounds/castle.png", X_SCREEN /2, Y_SCREEN /2, 1);
-			draw_image_resized("./sprites/menu/mlf_logo.png", X_SCREEN /10, Y_SCREEN /8, 0.5);
-			draw_image_resized("./sprites/text/choose_your_background.png", X_SCREEN /2, Y_SCREEN /10, 1);
+			draw_image_resized(castle_back, X_SCREEN /2, Y_SCREEN /2, 1);
+			draw_image_resized(mlf_logo, X_SCREEN /10, Y_SCREEN /8, 0.5);
+			draw_image_resized(choose_background, X_SCREEN /2, Y_SCREEN /10, 1);
 			button_update(back, game->mouse_x, game->mouse_y);
 			button_update(next, game->mouse_x, game->mouse_y);
 			button_update(castle, game->mouse_x, game->mouse_y);
@@ -221,11 +226,11 @@ void mlf_menu_back_sel(struct mlf *game)
 			button_update(cloudsdale, game->mouse_x, game->mouse_y);
 
 			if (game->back == CASTLE)
-				draw_image_resized("./sprites/text/castle_of_friendship.png", X_SCREEN /2, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_castle, X_SCREEN /2, Y_SCREEN*0.84, 1);
 			if (game->back == PONYVILLE)
-				draw_image_resized("./sprites/text/ponyville.png", X_SCREEN /2, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_ponyville, X_SCREEN /2, Y_SCREEN*0.84, 1);
 			if (game->back == CLOUDSDALE)
-				draw_image_resized("./sprites/text/cloudsdale.png", X_SCREEN /2, Y_SCREEN*8.4/10, 1);
+				draw_image_resized(text_cloudsdale, X_SCREEN /2, Y_SCREEN*0.84, 1);
 
 			al_flip_display();	
 		}
@@ -256,16 +261,51 @@ void mlf_menu_back_sel(struct mlf *game)
 	button_destroy(castle);
 	button_destroy(ponyville);
 	button_destroy(cloudsdale);
+	al_destroy_bitmap(castle_back);
+	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(choose_background);
+	al_destroy_bitmap(text_castle);
+	al_destroy_bitmap(text_ponyville);
+	al_destroy_bitmap(text_cloudsdale);
 }
 
 void mlf_start_fight(struct mlf *game)
 {
-	draw_background(game->back);
+	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.85, X_SCREEN, Y_SCREEN*0.1, 1);
+	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
+	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	
+
 	while (game->state == START_FIGHT) {
+
+		al_wait_for_event(game->queue, &(game->event));
+
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			game->mouse_x = game->event.mouse.x;
+			game->mouse_y = game->event.mouse.y;
+		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
-						
+			draw_background(game->back);
+			box_draw(floor, 0, 153, 51);
+			box_draw(player1->hitbox, 255, 122, 255);
+			box_draw(player2->hitbox, 255, 122, 255);
+			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, 1);
+			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5);
+
+			al_flip_display();	
+		}
+		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) && (game->event.type == ALLEGRO_EVENT_KEY_UP)) {
+			update_joystick(player1, player2);
+		}
+
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
 		}
 	}
+
+	box_destroy(floor);
+	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(white_bar);
 }
 
 void mlf_update_game(struct mlf *game)

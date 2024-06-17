@@ -11,37 +11,36 @@
 #define RARITY 1
 
 // estados do personagem
-#define IDLE 0
-#define RIGHT1 1
-#define RIGHT2 2
-#define LEFT1 3
-#define LEFT2 4
-#define JUMP1 5
-#define JUMP2 6
-#define JUMP3 7
-#define JUMP4 8
-#define JUMP5 9
-#define DOWN1 10
+enum State {
+	IDLE_R,
+	IDLE_L,
+	RIGHT1,
+	RIGHT2,
+	RIGHT3,
+	RIGHT4,
+};
+
+enum Direction {
+	RIGHT,
+	LEFT, 
+	UP,
+	DOWN,
+	IDLE,
+};
 
 #define STEPS 15
-
-//direcoes
-#define RIGHT 0
-#define LEFT 1
-#define UP 2
-#define DOWN 3
-
 #define RESIZE 6
 
 // ESTRUTURA  ======================================================
 
 struct player {
 	char id;
-	short state;
 	short health;
 	short x;
 	short y;
 	float resize;
+	enum Direction dir;
+	enum State state;
 	struct box *hitbox;
 	struct joystick *control;
 	ALLEGRO_BITMAP **bitmap;
@@ -53,9 +52,12 @@ struct player *player_create(short x, short y, float resize);
 
 void player_destroy(struct player *playerD);
 
-void player_update_state(struct player *playerP);
+void player_update_joystick(struct player *player1, struct player *player2, int keycode);
 
-void player_update_position(struct player *playerP);
+void player_move(struct player *player1, struct player *player2 )
+//void player_update_state(struct player *playerP);
+
+//void player_update_position(struct player *playerP);
 
 
 

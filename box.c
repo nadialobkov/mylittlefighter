@@ -24,12 +24,24 @@ void box_destroy(struct box *box)
 	free(box);
 }
 
-void box_draw(struct box *box1)
+void box_draw(struct box *box1, short r, short g, short b)
 {
 	al_draw_filled_rectangle(box1->x - box1->side_x /2, box1->y - box1->side_y /2,
 									 box1->x + box1->side_x /2, box1->y + box1->side_y /2, 
-									 al_map_rgb(255, 102, 255));		
+									 al_map_rgb(r, g, b));		
 }
+
+struct box *box_update(struct box *box1, short x, short y, short side_x, short side_y, char active)
+{
+	box1->x = x;
+	box1->y = y;
+	box1->side_x = side_x;
+	box1->side_y = side_y;
+	box1->active = active;
+
+	return box1;
+}
+
 
 char box_valid_position(struct box *box1)
 {
