@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <allegro5/allegro_primitives.h>
 #include "box.h" 
-#include "streetfighter.h"
+#include "mylittlefighter.h"
 
 
 struct box *box_create(short x, short y, short side_x, short side_y, char active)

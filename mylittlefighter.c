@@ -42,13 +42,33 @@ void draw_background(enum Backgrounds back)
 	al_destroy_bitmap(cloudsdale);
 }
 
+ALLEGRO_BITMAP *background_sel(enum Backgrounds back)
+{
+	ALLEGRO_BITMAP *background;
+
+	switch (back) {
+		case CASTLE:
+			background = al_load_bitmap("./sprites/backgrounds/castle.png");
+			break;
+		case PONYVILLE:
+			background = al_load_bitmap("./sprites/backgrounds/ponyville.png");
+			break;
+		case CLOUDSDALE:
+			background = al_load_bitmap("./sprites/backgrounds/sky.png");
+			break;
+	}
+	
+	return background;
+}
+
+
 struct mlf *mlf_create_game()
 {
 	struct mlf *game = malloc(sizeof(struct mlf));
 
 	game->state = MENU_START;
-	game->player1 = player_create(X_SCREEN/4, Y_SCREEN *3/4, 0.5);
-	game->player2 = player_create(X_SCREEN*3/4, Y_SCREEN *3/4, 0.5);
+	game->player1 = player_create(X_SCREEN/4, Y_SCREEN *3/4, 0.1);
+	game->player2 = player_create(X_SCREEN*3/4, Y_SCREEN *3/4, 0.1);
 	game->queue = al_create_event_queue();
 	game->timer = al_create_timer(1.0/ FPS);
 	game->disp = al_create_display(X_SCREEN, Y_SCREEN);
@@ -274,6 +294,7 @@ void mlf_start_fight(struct mlf *game)
 	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.85, X_SCREEN, Y_SCREEN*0.1, 1);
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *background = background_sel(game->back);
 	
 
 	while (game->state == START_FIGHT) {
@@ -285,17 +306,19 @@ void mlf_start_fight(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
-			draw_background(game->back);
+			//draw_background(game->back);
+			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, 1);
 			box_draw(floor, 0, 153, 51);
-			box_draw(player1->hitbox, 255, 122, 255);
-			box_draw(player2->hitbox, 255, 122, 255);
+			player_move(game->player1, game->player2, floor);
+			box_draw(game->player1->hitbox, 255, 122, 255);
+			box_draw(game->player2->hitbox, 255, 122, 255);
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, 1);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5);
 
 			al_flip_display();	
 		}
-		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) && (game->event.type == ALLEGRO_EVENT_KEY_UP)) {
-			update_joystick(player1, player2);
+		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) || (game->event.type == ALLEGRO_EVENT_KEY_UP)) {
+			player_update_joystick(game->player1, game->player2, game->event.keyboard.keycode);
 		}
 
 		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -306,6 +329,7 @@ void mlf_start_fight(struct mlf *game)
 	box_destroy(floor);
 	al_destroy_bitmap(mlf_logo);
 	al_destroy_bitmap(white_bar);
+	al_destroy_bitmap(background);
 }
 
 void mlf_update_game(struct mlf *game)

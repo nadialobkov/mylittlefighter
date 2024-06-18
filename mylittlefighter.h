@@ -2,9 +2,9 @@
 #define _MYLITTLEFIGHTER_H_
 
 
-#define X_SCREEN 1920
-#define Y_SCREEN 1080
-#define FPS 5
+#define X_SCREEN 1280
+#define Y_SCREEN 720
+#define FPS 20
 
 
 enum Game_state {

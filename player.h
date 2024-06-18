@@ -28,14 +28,18 @@ enum Direction {
 	IDLE,
 };
 
-#define STEPS 15
-#define RESIZE 6
+#define STEPS 15 
+#define RESIZE 10
+#define VEL_MAX 5
+#define VEL_MIN -5
+
 
 // ESTRUTURA  ======================================================
 
 struct player {
 	char id;
-	short health;
+	short hp;
+	short vel;
 	short x;
 	short y;
 	float resize;
@@ -54,7 +58,8 @@ void player_destroy(struct player *playerD);
 
 void player_update_joystick(struct player *player1, struct player *player2, int keycode);
 
-void player_move(struct player *player1, struct player *player2 )
+void player_move(struct player *player1, struct player *player2, struct box *floor);
+
 //void player_update_state(struct player *playerP);
 
 //void player_update_position(struct player *playerP);

@@ -27,9 +27,10 @@ struct player *player_create(short x, short y, float resize)
 	struct player *new_player = malloc(sizeof(struct player));
 
 	new_player->id = -1;
-	new_player->State = IDLE_R;
-	new_player->Direction = IDLE;
-	new_player->health = 100;
+	new_player->state = IDLE_R;
+	new_player->dir = IDLE;
+	new_player->hp = 100;
+	new_player->vel= VEL_MAX;
 	new_player->x = x;
 	new_player->y = y;
 	new_player->resize = resize;
@@ -72,13 +73,13 @@ void player_destroy(struct player *playerD)
 void player_draw(struct player *playerP)
 {
 	short frame = playerP->state;
-	if (playerP->state == JUMP1)
+	/*if (playerP->state == JUMP1)
 		frame = 7;
 	if (playerP->state == JUMP2 || playerP->state == JUMP4 || playerP->state == JUMP5)
 		frame = 5;
 	if (playerP->state == JUMP3)
 		frame = 6; 
-
+*/
 	short side_x = al_get_bitmap_width(playerP->bitmap[frame]);
 	short side_y = al_get_bitmap_height(playerP->bitmap[frame]);
 	short x = playerP->x - side_x/(2*RESIZE);
@@ -89,7 +90,7 @@ void player_draw(struct player *playerP)
 
 void player_update_joystick(struct player *player1, struct player *player2, int keycode)
 {
-	if (keycode == ALLEGRO_KEY_A)
+	if (keycode == ALLEGRO_KEY_A) 
 		joystick_left(player1->control);
 	if (keycode == ALLEGRO_KEY_D)
 		joystick_right(player1->control);
@@ -111,7 +112,7 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 }	
 
 
-void player_move(struct player *player1, struct player *player2 )
+void player_move(struct player *player1, struct player *player2, struct box *floor)
 {
 	// movimento do player 1
 	if (player1->control->right) {
@@ -132,12 +133,20 @@ void player_move(struct player *player1, struct player *player2 )
 			player1->hitbox->x = player1->hitbox->x +  STEPS;
 	}
 
-	if (player1->control->up) {
-		player1->hitbox->y = player1->hitbox->y -  STEPS;
-		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox))
-			player1->y = player1->y -  STEPS;
+	// pulo inicia com a velocidade maxima 
+	if (box_collision(player1->hitbox, floor))
+		player1->vel = VEL_MAX;
+
+	// caso estiver pulando 
+	if ((player1->control->up) || !box_collision(player1->hitbox, floor)) {
+		player1->hitbox->y = player1->hitbox->y - player1->vel * STEPS;
+		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)) {
+			player1->y = player1->y - player1->vel *STEPS;
+			player1->vel = player1->vel - 1;
+		}
 		else
-			player1->hitbox->y = player1->hitbox->y +  STEPS;
+			player1->hitbox->y = player1->hitbox->y + player1->vel * STEPS;
+
 	}
 
 	if (player1->control->down) {
@@ -323,5 +332,5 @@ void player_update_position(struct player *playerP)
 			box_draw(playerP->hitbox, 255, 102, 255);
 	//		player_draw(playerP);
 			break;
-	}*/
-}
+	}
+}*/
