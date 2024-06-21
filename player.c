@@ -115,47 +115,56 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 void player_move(struct player *player1, struct player *player2, struct box *floor)
 {
 	// movimento do player 1
-	if (player1->control->right) {
-		player1->hitbox->x = player1->hitbox->x +  STEPS;
-		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)){
-			player1->x = player1->x +  STEPS;
-		}
-		else
-			player1->hitbox->x = player1->hitbox->x -  STEPS;
-	}
 
-	if (player1->control->left) {
-		player1->hitbox->x = player1->hitbox->x -  STEPS;
-		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)){
-			player1->x = player1->x -  STEPS;
+	if (player1->control->down && box_collision(player1->hitbox, floor)) {
+		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize;
+		short new_y = player1->y + side_y /8;
+		player1->hitbox = box_update(player1->hitbox, player1->hitbox->x, new_y, player1->hitbox->side_x, side_y /2, 1);
+	}
+	else {
+		// se antes ele estava agachado, resetamos a hitbox
+		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize;
+		if (player1->hitbox->side_y != side_y) {
+			short new_y = player1->y - side_y /8;
+			player1->hitbox = box_update(player1->hitbox, player1->hitbox->x, new_y, player1->hitbox->side_x, side_y, 1);
 		}
-		else
+
+
+		if (player1->control->right) {
 			player1->hitbox->x = player1->hitbox->x +  STEPS;
-	}
-
-	// pulo inicia com a velocidade maxima 
-	if (box_collision(player1->hitbox, floor))
-		player1->vel = VEL_MAX;
-
-	// caso estiver pulando 
-	if ((player1->control->up) || !box_collision(player1->hitbox, floor)) {
-		player1->hitbox->y = player1->hitbox->y - player1->vel * STEPS;
-		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)) {
-			player1->y = player1->y - player1->vel *STEPS;
-			player1->vel = player1->vel - 1;
+			if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)){
+				player1->x = player1->x +  STEPS;
+			}
+			else
+				player1->hitbox->x = player1->hitbox->x -  STEPS;
 		}
-		else
-			player1->hitbox->y = player1->hitbox->y + player1->vel * STEPS;
 
+		if (player1->control->left) {
+			player1->hitbox->x = player1->hitbox->x -  STEPS;
+			if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)){
+				player1->x = player1->x -  STEPS;
+			}
+			else
+				player1->hitbox->x = player1->hitbox->x +  STEPS;
+		}
+
+		// pulo inicia com a velocidade maxima 
+		if (box_collision(player1->hitbox, floor))
+			player1->vel = VEL_MAX;
+
+		// caso estiver pulando 
+		if ((player1->control->up) || !box_collision(player1->hitbox, floor)) {
+			player1->hitbox->y = player1->hitbox->y - player1->vel * STEPS;
+			if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox)) {
+				player1->y = player1->y - player1->vel *STEPS;
+				player1->vel = player1->vel - 1;
+			}
+			else
+				player1->hitbox->y = player1->hitbox->y + player1->vel * STEPS;
+
+		}
 	}
 
-	if (player1->control->down) {
-		player1->hitbox->y = player1->hitbox->y +  STEPS;
-		if (box_valid_position(player1->hitbox) && !box_collision(player1->hitbox, player2->hitbox))
-			player1->y = player1->y +  STEPS;
-		else
-			player1->hitbox->y = player1->hitbox->y -  STEPS;
-	}
 	
 	// movimento do player 2
 	if (player2->control->right) {

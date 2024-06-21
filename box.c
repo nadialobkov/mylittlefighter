@@ -55,17 +55,17 @@ char box_valid_position(struct box *box1)
 
 char box_collision(struct box *box1, struct box *box2)
 {
-	if ( ( (((box1->y + box1->side_y /2) > (box2->y - box2->side_y /2)) && 
-		   ((box2->y - box2->side_y /2) > (box1->y - box1->side_y /2))) ||
-		 ( ((box2->y + box2->side_y /2) > (box1->y - box1->side_y /2)) &&
-		   ((box1->y - box1->side_y /2) > (box2->y - box2->side_y /2))) ) 
+	if ( ( (((box1->y + box1->side_y /2) >= (box2->y - box2->side_y /2)) && 
+		   ((box2->y - box2->side_y /2) >= (box1->y - box1->side_y /2))) ||
+		 ( ((box2->y + box2->side_y /2) >= (box1->y - box1->side_y /2)) &&
+		   ((box1->y - box1->side_y /2) >= (box2->y - box2->side_y /2))) ) 
 		
 		&&
 
-	     ( (((box1->x + box1->side_x /2) > (box2->x - box2->side_x /2)) && 
-		   ((box2->x - box2->side_x /2) > (box1->x - box1->side_x /2))) ||
-		 ( ((box2->x + box2->side_x /2) > (box1->x - box1->side_x /2)) &&
-		   ((box1->x - box1->side_x /2) > (box2->x - box2->side_x /2)) ) ) )
+	     ( (((box1->x + box1->side_x /2) >= (box2->x - box2->side_x /2)) && 
+		   ((box2->x - box2->side_x /2) >= (box1->x - box1->side_x /2))) ||
+		 ( ((box2->x + box2->side_x /2) >= (box1->x - box1->side_x /2)) &&
+		   ((box1->x - box1->side_x /2) >= (box2->x - box2->side_x /2)) ) ) )
 
 		return 1;
 
