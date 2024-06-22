@@ -67,8 +67,8 @@ struct mlf *mlf_create_game()
 	struct mlf *game = malloc(sizeof(struct mlf));
 
 	game->state = MENU_START;
-	game->player1 = player_create(X_SCREEN/4, Y_SCREEN *3/4, 0.1);
-	game->player2 = player_create(X_SCREEN*3/4, Y_SCREEN *3/4, 0.1);
+	game->player1 = NULL; 
+	game->player2 = NULL;
 	game->queue = al_create_event_queue();
 	game->timer = al_create_timer(1.0/ FPS);
 	game->disp = al_create_display(X_SCREEN, Y_SCREEN);
@@ -140,6 +140,8 @@ void mlf_menu_player_sel(struct mlf *game)
 	ALLEGRO_BITMAP *text_pinkie = al_load_bitmap("./sprites/text/pinkie_pie.png");
 	ALLEGRO_BITMAP *text_rarity = al_load_bitmap("./sprites/text/rarity.png");
 
+	enum Pony player1_id = -1;
+	enum Pony player2_id = -1;
 
 	while (game->state == MENU_PLAYER_SEL) {
 		
@@ -159,16 +161,16 @@ void mlf_menu_player_sel(struct mlf *game)
 			button_update(p2_icon0, game->mouse_x, game->mouse_y);
 			button_update(p2_icon1, game->mouse_x, game->mouse_y);
 
-			if (game->player1->id == PINKIE)
+			if (player1_id == PINKIE)
 				draw_image_resized(text_pinkie, X_SCREEN/3, Y_SCREEN*0.84, 1);
-			if (game->player2->id == PINKIE)
+			if (player2_id == PINKIE)
 				draw_image_resized(text_pinkie, X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
-			if (game->player1->id == RARITY)
+			if (player1_id == RARITY)
 				draw_image_resized(text_rarity, X_SCREEN/3, Y_SCREEN*8.4/10, 1);
-			if (game->player2->id == RARITY)
+			if (player2_id == RARITY)
 				draw_image_resized(text_rarity, X_SCREEN*2/3, Y_SCREEN*8.4/10, 1);
 
-			if ((game->player1->id != -1) && (game->player2->id != -1))
+			if ((player1_id != -1) && (player2_id != -1))
 				button_update(next, game->mouse_x, game->mouse_y);
 
 			al_flip_display();	
@@ -178,20 +180,20 @@ void mlf_menu_player_sel(struct mlf *game)
 				game->state = MENU_START;
 			}
 			if (button_pressed(next, game->mouse_x, game->mouse_y, game->event)) {
-				if ((game->player1->id != -1) && (game->player2->id != -1))
+				if ((player1_id != -1) && (player2_id != -1))
 					game->state = MENU_BACK_SEL;
 			}
 			if (button_pressed(p1_icon0, game->mouse_x, game->mouse_y, game->event)) {
-				game->player1->id = PINKIE;
+				player1_id = PINKIE;
 			}
 			if (button_pressed(p1_icon1, game->mouse_x, game->mouse_y, game->event)) {
-				game->player1->id = RARITY;
+				player1_id = RARITY;
 			}
 			if (button_pressed(p2_icon0, game->mouse_x, game->mouse_y, game->event)) {
-				game->player2->id = PINKIE;
+				player2_id = PINKIE;
 			}
 			if (button_pressed(p2_icon1, game->mouse_x, game->mouse_y, game->event)) {
-				game->player2->id = RARITY;
+				player2_id = RARITY;
 			}
 
 		}
@@ -199,6 +201,10 @@ void mlf_menu_player_sel(struct mlf *game)
 			break;
 		}
 	}
+
+
+	game->player1 = player_create(player1_id, X_SCREEN/4, Y_SCREEN*3/4, 0.2);
+	game->player2 = player_create(player2_id, X_SCREEN*3/4, Y_SCREEN*3/4, 0.2);
 
 	button_destroy(back);
 	button_destroy(next);
@@ -296,6 +302,7 @@ void mlf_start_fight(struct mlf *game)
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
 	
+	short cooldown = 0;
 
 	while (game->state == START_FIGHT) {
 
@@ -312,6 +319,14 @@ void mlf_start_fight(struct mlf *game)
 			player_move(game->player1, game->player2, floor);
 			box_draw(game->player1->hitbox, 255, 122, 255);
 			box_draw(game->player2->hitbox, 255, 122, 255);
+			player_animation(game->player1);
+			if (!cooldown) {
+				player_update_state(game->player1);
+				cooldown = 1;
+			}
+			else
+				cooldown = 0;
+
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, 1);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5);
 

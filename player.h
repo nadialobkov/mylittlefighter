@@ -7,8 +7,10 @@
 #include "joystick.h"
 
 // players id 
-#define PINKIE 0
-#define RARITY 1
+enum Pony {
+	PINKIE,
+	RARITY,
+};
 
 // estados do personagem
 enum State {
@@ -18,6 +20,30 @@ enum State {
 	RIGHT2,
 	RIGHT3,
 	RIGHT4,
+	LEFT1,
+	LEFT2,
+	LEFT3,
+	LEFT4,
+	UP_R1,
+	UP_R2,
+	UP_R3,
+	UP_R4,
+	FALL_R1,
+	FALL_R2,
+	FALL_R3,
+	FALL_R4,
+	UP_L1,
+	UP_L2,
+	UP_L3,
+	UP_L4,
+	FALL_L1,
+	FALL_L2,
+	FALL_L3,
+	FALL_L4,
+	DOWN_R1,
+	DOWN_R2,
+	DOWN_L1,
+	DOWN_L2,
 };
 
 enum Direction {
@@ -25,19 +51,20 @@ enum Direction {
 	LEFT, 
 	UP,
 	DOWN,
+	FALL,
 	IDLE,
 };
 
 #define STEPS 15 
 #define RESIZE 10
-#define VEL_MAX 5
-#define VEL_MIN -5
+#define VEL_MAX 8
+#define VEL_MIN -8
 
 
 // ESTRUTURA  ======================================================
 
 struct player {
-	char id;
+	enum Pony id;
 	short hp;
 	short vel;
 	short x;
@@ -52,7 +79,7 @@ struct player {
 
 // FUNCOES =========================================================
 
-struct player *player_create(short x, short y, float resize);
+struct player *player_create(enum Pony id, short x, short y, float resize);
 
 void player_destroy(struct player *playerD);
 
@@ -60,7 +87,9 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 
 void player_move(struct player *player1, struct player *player2, struct box *floor);
 
-//void player_update_state(struct player *playerP);
+void player_animation(struct player *player);
+
+void player_update_state(struct player *player);
 
 //void player_update_position(struct player *playerP);
 
