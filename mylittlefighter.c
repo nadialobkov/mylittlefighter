@@ -313,12 +313,13 @@ void mlf_start_fight(struct mlf *game)
 			game->mouse_y = game->event.mouse.y;
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
-			//draw_background(game->back);
 			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, 1);
 			box_draw(floor, 0, 153, 51);
+			player_attack(game->player1, game->player2);
 			player_move(game->player1, game->player2, floor);
-			box_draw(game->player1->hitbox, 255, 122, 255);
-			box_draw(game->player2->hitbox, 255, 122, 255);
+			box_draw(game->player1->hurtbox, 255, 122, 255);
+			box_draw(game->player1->hitbox, 102, 0, 204);
+			box_draw(game->player2->hurtbox, 255, 122, 255);
 			player_animation(game->player1);
 			if (!cooldown) {
 				player_update_state(game->player1);
@@ -330,6 +331,7 @@ void mlf_start_fight(struct mlf *game)
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, 1);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5);
 
+			player_draw_hp(game->player2->hp, 2);
 			al_flip_display();	
 		}
 		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) || (game->event.type == ALLEGRO_EVENT_KEY_UP)) {

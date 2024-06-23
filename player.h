@@ -13,47 +13,47 @@ enum Pony {
 };
 
 // estados do personagem
-enum State {
-	IDLE_R,
-	IDLE_L,
-	RIGHT1,
-	RIGHT2,
-	RIGHT3,
-	RIGHT4,
-	LEFT1,
-	LEFT2,
-	LEFT3,
-	LEFT4,
-	UP_R1,
-	UP_R2,
-	UP_R3,
-	UP_R4,
-	FALL_R1,
-	FALL_R2,
-	FALL_R3,
-	FALL_R4,
-	UP_L1,
-	UP_L2,
-	UP_L3,
-	UP_L4,
-	FALL_L1,
-	FALL_L2,
-	FALL_L3,
-	FALL_L4,
-	DOWN_R1,
-	DOWN_R2,
-	DOWN_L1,
-	DOWN_L2,
+enum Frames {
+	IDLE1,
+	RUN1,
+	RUN2,
+	RUN3,
+	RUN4,
+	UP1,
+	UP2,
+	UP3,
+	UP4,
+	FALL1,
+	FALL2,
+	FALL3,
+	FALL4,
+	DOWN1,
+	DOWN2,
+	HIT1_1,
+	HIT1_2,
+	HIT1_3,
+	HIT1_4,
+	HIT1_5,
+	HIT1_6,
+	HIT2_1,
+	HIT2_2,
+	HIT2_3,
+	HIT2_4,
+	HIT2_5,
 };
 
-enum Direction {
-	RIGHT,
-	LEFT, 
+enum State {
+	IDLE,
+	RUN,
 	UP,
 	DOWN,
 	FALL,
-	IDLE,
+	ATTACK1,
+	ATTACK2,
 };
+
+#define RIGHT 0
+#define LEFT 1
 
 #define STEPS 15 
 #define RESIZE 10
@@ -70,8 +70,10 @@ struct player {
 	short x;
 	short y;
 	float resize;
-	enum Direction dir;
+	char dir;
 	enum State state;
+	enum Frames frame;
+	struct box *hurtbox;
 	struct box *hitbox;
 	struct joystick *control;
 	ALLEGRO_BITMAP **bitmap;
@@ -83,7 +85,11 @@ struct player *player_create(enum Pony id, short x, short y, float resize);
 
 void player_destroy(struct player *playerD);
 
+void player_draw_hp(short hp, short num);
+
 void player_update_joystick(struct player *player1, struct player *player2, int keycode);
+
+void player_attack(struct player *player1, struct player *player2);
 
 void player_move(struct player *player1, struct player *player2, struct box *floor);
 
