@@ -5,9 +5,9 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include "player.h"
+#include "mylittlefighter.h"
 #include "box.h"
 #include "joystick.h"
-#include "streetfighter.h"
 
 ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap, enum Pony player_id)
 {
@@ -76,7 +76,7 @@ void player_destroy(struct player *player)
 }
 
 
-void player_draw(struct player *player, short frame, short flag)
+void player_draw(struct player *player, short frame, char dir)
 {
 	short side_x = al_get_bitmap_width(player->bitmap[frame]);
 	short side_y = al_get_bitmap_height(player->bitmap[frame]);
@@ -85,10 +85,10 @@ void player_draw(struct player *player, short frame, short flag)
 	short x = player->x - side_x/(2*RESIZE);
 	short y = player->y - side_y/(2*RESIZE);
 
-	if (!flag)
-		al_draw_scaled_bitmap(player->bitmap[frame], 0, 0, side_x, side_y, x - new_side_x/4, y - new_side_y/3, new_side_x, new_side_y, 0);		
+	if (dir == RIGHT)
+		al_draw_scaled_bitmap(player->bitmap[frame], 0, 0, side_x, side_y, x - new_side_x*0.3, y - new_side_y*0.4, new_side_x, new_side_y, 0);		
 	else
-		al_draw_scaled_bitmap(player->bitmap[frame], 0, 0, side_x, side_y, x- new_side_x/4, y- new_side_y/3, new_side_x, new_side_y, ALLEGRO_FLIP_HORIZONTAL);		
+		al_draw_scaled_bitmap(player->bitmap[frame], 0, 0, side_x, side_y, x- new_side_x*0.3, y- new_side_y*0.4, new_side_x, new_side_y, ALLEGRO_FLIP_HORIZONTAL);		
 }
 
 void player_draw_hp(short hp, short num)
@@ -103,11 +103,11 @@ void player_draw_hp(short hp, short num)
 	if (hp < 20) g -= 102;
 	
 
-	short size = (X_SCREEN - X_SCREEN/5) * (100 - hp)/100;
+	short size = (X_SCREEN*0.27) * (100 - hp)/100;
 	if (num == 1)
-		al_draw_filled_rectangle(X_SCREEN/5 + size, Y_SCREEN/8, X_SCREEN, Y_SCREEN/5, al_map_rgb(r, g, 0));		
+		al_draw_filled_rectangle(X_SCREEN*0.18 + size, Y_SCREEN*0.1, X_SCREEN*0.45, Y_SCREEN*0.15, al_map_rgb(r, g, 0));		
 	else
-		al_draw_filled_rectangle(X_SCREEN*3/2, Y_SCREEN/8, X_SCREEN*8/5 + size, Y_SCREEN/5, al_map_rgb(r, g, 0));		
+		al_draw_filled_rectangle(X_SCREEN*0.55, Y_SCREEN*0.1, X_SCREEN*0.82 - size, Y_SCREEN*0.15, al_map_rgb(r, g, 0));		
 
 
 }
@@ -149,6 +149,7 @@ void player_attack(struct player *player1, struct player *player2)
 			player1->state = ATTACK1;
 		}
 		if (player1->control->hit2 && player1->state != ATTACK1) {
+
 			player1->state = ATTACK2;
 		}
 		if (player1->state == ATTACK1) {
@@ -212,7 +213,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 //	printf("colidindo com chao? %d\n",  box_collision(player1->hurtbox, floor));
 	if (player1->control->down && box_collision(player1->hurtbox, floor)) {
 		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
-		short new_y = player1->y + side_y /8;
+		short new_y = player1->y + side_y /4;
 		player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y /2, 1);
 		player1->state = DOWN;
 	}
@@ -220,8 +221,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 		// se antes ele estava agachado, resetamos a hurtbox
 		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
 		if (player1->hurtbox->side_y != side_y) {
-			short new_y = player1->y - side_y /8;
-			player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y, 1);
+			player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, player1->y, player1->hurtbox->side_x, side_y, 1);
 		}
 
 
@@ -603,6 +603,11 @@ void player_update_state(struct player *player)
 			break;
 
 		case HIT2_1:
+			if (player->dir == RIGHT) 
+				player->dir = LEFT;
+			else
+				player->dir = RIGHT;
+
 			player->frame = HIT2_2;
 			break;
 
@@ -629,6 +634,10 @@ void player_update_state(struct player *player)
 				player->frame = IDLE1;
 			if (player->state == ATTACK1)
 				player->frame = HIT1_1;
+			if (player->dir == RIGHT) 
+				player->dir = LEFT;
+			else
+				player->dir = RIGHT;
 			break;
 	}
 }

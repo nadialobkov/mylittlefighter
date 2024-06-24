@@ -4,7 +4,8 @@
 
 #define X_SCREEN 1280
 #define Y_SCREEN 720
-#define FPS 20
+#define RESIZE_SCREEN 0.67
+#define FPS 24
 
 
 enum Game_state {
