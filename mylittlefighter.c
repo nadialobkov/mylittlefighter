@@ -275,12 +275,20 @@ void mlf_menu_back_sel(struct mlf *game)
 
 void mlf_start_fight(struct mlf *game)
 {
-	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.85, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
+	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.9, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *text1 = al_load_bitmap("./sprites/text/1.png");
+	ALLEGRO_BITMAP *text2 = al_load_bitmap("./sprites/text/2.png");
+	ALLEGRO_BITMAP *text3 = al_load_bitmap("./sprites/text/3.png");
+	ALLEGRO_BITMAP *text_fight = al_load_bitmap("./sprites/text/fight.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
+
+	game->player1->control->active = 0;
+	game->player2->control->active = 0;
+	game->player2->dir = LEFT;
 	
-	short cooldown = 0;
+	short cooldown = 4 *FPS;
 
 	while (game->state == START_FIGHT) {
 
@@ -292,24 +300,98 @@ void mlf_start_fight(struct mlf *game)
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
 			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
-			box_draw(floor, 0, 153, 51);
-			player_attack(game->player1, game->player2);
-			player_move(game->player1, game->player2, floor);
-			box_draw(game->player1->hurtbox, 255, 122, 255);
-			box_draw(game->player1->hitbox, 102, 0, 204);
-			box_draw(game->player2->hurtbox, 255, 122, 255);
+			
 			player_animation(game->player1);
+			player_animation(game->player2);
+			if (cooldown == 0) {
+				game->state = FIGHT;
+				break;
+			}
+
+			cooldown--;
+
+			if (cooldown >= (3 * FPS))
+				draw_image_resized(text3, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+			else
+				if (cooldown >= (2 * FPS))
+					draw_image_resized(text2, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+				else
+					if (cooldown >= FPS)
+						draw_image_resized(text1, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+					else
+						draw_image_resized(text_fight, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+						
+
+			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
+			player_draw_hp(game->player1->hp, 1);
+			player_draw_hp(game->player2->hp, 2);
+			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+
+			player_draw_hp(game->player1->hp, 1);
+			player_draw_hp(game->player2->hp, 2);
+			al_flip_display();	
+		}
+
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
+		}
+	}
+
+	box_destroy(floor);
+	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(white_bar);
+	al_destroy_bitmap(background);
+	al_destroy_bitmap(text1);
+	al_destroy_bitmap(text2);
+	al_destroy_bitmap(text3);
+	al_destroy_bitmap(text_fight);
+}
+
+void mlf_fight(struct mlf *game)
+{
+	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.85, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
+	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
+	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *background = background_sel(game->back);
+	
+	game->player1->control->active = 1;
+	game->player2->control->active = 1;
+
+	short cooldown = 0;
+
+	while (game->state == FIGHT) {
+
+		al_wait_for_event(game->queue, &(game->event));
+
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			game->mouse_x = game->event.mouse.x;
+			game->mouse_y = game->event.mouse.y;
+		}
+		if (game->event.type == ALLEGRO_EVENT_TIMER) {
+			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
+			//box_draw(floor, 0, 153, 51);
+			player_attack(game->player1, game->player2);
+			player_attack(game->player2, game->player1);
+			player_move(game->player1, game->player2, floor);
+			player_move(game->player2, game->player1, floor);
+			//box_draw(game->player1->hurtbox, 255, 122, 255);
+			//box_draw(game->player1->hitbox, 102, 0, 204);
+			//box_draw(game->player2->hurtbox, 255, 122, 255);
+			player_animation(game->player1);
+			player_animation(game->player2);
 			if (!cooldown) {
 				player_update_state(game->player1);
+				player_update_state(game->player2);
 				cooldown = 1;
 			}
 			else
 				cooldown = 0;
 
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
+			player_draw_hp(game->player1->hp, 1);
+			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 
-			player_draw_hp(game->player2->hp, 2);
 			al_flip_display();	
 		}
 		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) || (game->event.type == ALLEGRO_EVENT_KEY_UP)) {
@@ -326,7 +408,6 @@ void mlf_start_fight(struct mlf *game)
 	al_destroy_bitmap(white_bar);
 	al_destroy_bitmap(background);
 }
-
 void mlf_update_game(struct mlf *game)
 {
 	switch (game->state) {
@@ -342,6 +423,9 @@ void mlf_update_game(struct mlf *game)
 			break;
 		case START_FIGHT:
 			mlf_start_fight(game);
+			break;
+		case FIGHT:
+			mlf_fight(game);
 			break;
 
 	}

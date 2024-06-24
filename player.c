@@ -136,12 +136,19 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_up(player2->control);
 	if (keycode == ALLEGRO_KEY_DOWN)
 		joystick_down(player2->control);
+	if (keycode == ALLEGRO_KEY_SEMICOLON) 
+		joystick_hit1(player2->control);
+	if (keycode == ALLEGRO_KEY_SLASH)
+		joystick_hit2(player2->control);
 	
 }	
 
 
 void player_attack(struct player *player1, struct player *player2)
 {
+	if (!player1->control->active || !player2->control->active)
+		return;
+
 	// player nao pode atacar durante pulo ou descida
 	if ((player1->state != UP) && (player1->state != FALL)) {
 
@@ -201,6 +208,9 @@ void player_attack(struct player *player1, struct player *player2)
 
 void player_move(struct player *player1, struct player *player2, struct box *floor)
 {
+	if (!player1->control->active || !player2->control->active)
+		return;
+
 	if (player1->state == ATTACK1 || player1->state == ATTACK2)
 		return;
 
@@ -283,50 +293,6 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	}
 
 	
-	// movimento do player 2
-	if (player2->control->right) {
-		player2->hurtbox->x = player2->hurtbox->x +  STEPS;
-		if (box_valid_position(player2->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
-			player2->x = player2->x +  STEPS;
-		}
-		else
-			player2->hurtbox->x = player2->hurtbox->x -  STEPS;
-	}
-
-	if (player2->control->left) {
-		player2->hurtbox->x = player2->hurtbox->x -  STEPS;
-		if (box_valid_position(player2->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
-			player2->x = player2->x -  STEPS;
-		}
-		else
-			player2->hurtbox->x = player2->hurtbox->x +  STEPS;
-	}
-
-	if (player2->control->up) {
-		player2->hurtbox->y = player2->hurtbox->y -  STEPS;
-		if (box_valid_position(player2->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox))
-			player2->y = player2->y -  STEPS;
-		else
-			player2->hurtbox->y = player2->hurtbox->y +  STEPS;
-	}
-
-	if (player2->control->down) {
-		player2->hurtbox->y = player2->hurtbox->y +  STEPS;
-		if (box_valid_position(player2->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox))
-			player2->y = player2->y +  STEPS;
-		else
-			player2->hurtbox->y = player2->hurtbox->y -  STEPS;
-	}
-
-//	printf("dir %d\n", player1->dir);
-
-
-
-		
-
-	
-			
-
 }
 
 
