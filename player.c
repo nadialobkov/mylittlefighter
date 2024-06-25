@@ -15,7 +15,7 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap, enum Pony player_i
 
 
 	if (player_id == PINKIE) {
-		for (short i = 0; i <= 19; i++) {
+		for (short i = 0; i <= 25; i++) {
 			sprintf(string, "./sprites/players/pinkie/pinkie_%d.png", i);
 			bitmap[i] = al_load_bitmap(string);
 		}
@@ -31,6 +31,7 @@ struct player *player_create(enum Pony id, short x, short y, float resize)
 	struct player *new_player = malloc(sizeof(struct player));
 
 	new_player->id = id;
+	new_player->win = 0;
 	new_player->state = IDLE;
 	new_player->frame = IDLE1;
 	new_player->dir = RIGHT;
@@ -40,7 +41,7 @@ struct player *player_create(enum Pony id, short x, short y, float resize)
 	new_player->y = y;
 	new_player->resize = resize;
 
-	new_player->bitmap = malloc(20 * sizeof(ALLEGRO_BITMAP*));
+	new_player->bitmap = malloc(26 * sizeof(ALLEGRO_BITMAP*));
 	new_player->bitmap = player_load_bitmap(new_player->bitmap, id);	
 
 	short side_x = al_get_bitmap_width(new_player->bitmap[0]) * resize;
@@ -122,6 +123,8 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_up(player1->control);
 	if (keycode == ALLEGRO_KEY_S)
 		joystick_down(player1->control);
+	if (keycode == ALLEGRO_KEY_R)
+		joystick_dash(player1->control);
 	if (keycode == ALLEGRO_KEY_4) 
 		joystick_hit1(player1->control);
 	if (keycode == ALLEGRO_KEY_5)
@@ -150,13 +153,12 @@ void player_attack(struct player *player1, struct player *player2)
 		return;
 
 	// player nao pode atacar durante pulo ou descida
-	if ((player1->state != UP) && (player1->state != FALL)) {
+	if ((player1->state != UP) && (player1->state != FALL) && (player1->state != DASH && (player1->state != STUNNED))) {
 
 		if (player1->control->hit1 && player1->state != ATTACK2) {
 			player1->state = ATTACK1;
 		}
 		if (player1->control->hit2 && player1->state != ATTACK1) {
-
 			player1->state = ATTACK2;
 		}
 		if (player1->state == ATTACK1) {
@@ -172,6 +174,9 @@ void player_attack(struct player *player1, struct player *player2)
 				}
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y - STEPS*3/2;
+
+				player2->state = STUNNED;
+				player2->frame = STUN2;
 			}
 			if (player1->frame == HIT1_6) {
 				player1->hitbox->active = !ACTIVE;
@@ -193,6 +198,9 @@ void player_attack(struct player *player1, struct player *player2)
 				}
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y + STEPS;
+
+				player2->state = STUNNED;
+				player2->frame = STUN2;
 			}
 			if (player1->frame == HIT2_5) {
 				player1->hitbox->active = !ACTIVE;
@@ -211,7 +219,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	if (!player1->control->active || !player2->control->active)
 		return;
 
-	if (player1->state == ATTACK1 || player1->state == ATTACK2)
+	if (player1->state == ATTACK1 || player1->state == ATTACK2 || player1->state == STUNNED)
 		return;
 
 	// salva posicao inicial
@@ -220,76 +228,113 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 
 	// movimento do player 1
 	
-//	printf("colidindo com chao? %d\n",  box_collision(player1->hurtbox, floor));
-	if (player1->control->down && box_collision(player1->hurtbox, floor)) {
-		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
-		short new_y = player1->y + side_y /4;
-		player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y /2, 1);
-		player1->state = DOWN;
-	}
-	else {
-		// se antes ele estava agachado, resetamos a hurtbox
-		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
-		if (player1->hurtbox->side_y != side_y) {
-			player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, player1->y, player1->hurtbox->side_x, side_y, 1);
-		}
+	if (player1->control->dash) {
 
-
+		short dir;
 		if (player1->control->right) {
-			player1->hurtbox->x = player1->hurtbox->x +  STEPS;
-			if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
-				player1->x = player1->x +  STEPS;
-				player1->hitbox->x = player1->hitbox->x + STEPS;
-			}
-			else
-				player1->hurtbox->x = player1->hurtbox->x -  STEPS;
-		}
-
-		if (player1->control->left) {
-			player1->hurtbox->x = player1->hurtbox->x -  STEPS;
-			if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
-				player1->x = player1->x -  STEPS;
-				player1->hitbox->x = player1->hitbox->x - STEPS;
-			}
-			else
-				player1->hurtbox->x = player1->hurtbox->x +  STEPS;
-		}
-
-		// pulo inicia com a velocidade maxima 
-		if (box_collision(player1->hurtbox, floor))
-			player1->vel = VEL_MAX;
-
-		// caso estiver pulando 
-		if ((player1->control->up) || !box_collision(player1->hurtbox, floor)) {
-			player1->hurtbox->y = player1->hurtbox->y - player1->vel * STEPS/2;
-			if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)) {
-				player1->y = player1->y - player1->vel *STEPS/2;
-				player1->hitbox->y = player1->hitbox->y -player1->vel * STEPS/2;
-				player1->vel = player1->vel - 1;
-			}
-			else
-				player1->hurtbox->y = player1->hurtbox->y + player1->vel * STEPS/2;
-
-		}
-
-		// classifica stateecao final
-		if (player1->y < in_y1)
-			player1->state = UP;
-		else
-		if (player1->y > in_y1)
-			player1->state = FALL;
-		else
-		if (player1->x > in_x1) {
-			player1->state = RUN;
 			player1->dir = RIGHT;
+			dir = 1;
 		}
 		else
-		if (player1->x < in_x1) {
-			player1->state = RUN;
-			player1->dir = LEFT;
+			if (player1->control->left) {
+				player1->dir = LEFT;
+				dir = -1;
+			}
+			else
+				dir = 0;
+
+		float dash_vel = 1.5;
+		if (dir != 0) {
+			player1->hurtbox->x = player1->hurtbox->x + dash_vel * dir * STEPS;
+			if (box_valid_position(player1->hurtbox) && box_valid_position(player2->hurtbox)){
+				player1->x = player1->x + dash_vel * dir * STEPS;
+				player1->hitbox->x = player1->hitbox->x + dash_vel * dir * STEPS;
+				if (box_collision(player1->hurtbox, player2->hurtbox)) {
+					player2->x = player2->x + dash_vel * dir * STEPS;
+					player2->hurtbox->x = player2->hurtbox->x + dash_vel * dir * STEPS;
+					player2->hitbox->x = player2->hitbox->x + dash_vel * dir * STEPS;
+				}
+
+			}
+		
+			else
+				player1->hurtbox->x = player1->hurtbox->x -  dash_vel * dir *STEPS;
+			
+			player1->state = DASH;
 		}
-		else
-			player1->state = IDLE;
+	}		
+	else {	
+
+		if (player1->control->down && box_collision(player1->hurtbox, floor)) {
+			short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
+			short new_y = player1->y + side_y /4;
+			player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y /2, 1);
+			player1->state = DOWN;
+		}
+		else {
+			// se antes ele estava agachado, resetamos a hurtbox
+			short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
+			if (player1->hurtbox->side_y != side_y) {
+				player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, player1->y, player1->hurtbox->side_x, side_y, 1);
+			}
+
+
+			if (player1->control->right) {
+				player1->hurtbox->x = player1->hurtbox->x +  STEPS;
+				if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
+					player1->x = player1->x +  STEPS;
+					player1->hitbox->x = player1->hitbox->x + STEPS;
+				}
+				else
+					player1->hurtbox->x = player1->hurtbox->x -  STEPS;
+			}
+
+			if (player1->control->left) {
+				player1->hurtbox->x = player1->hurtbox->x -  STEPS;
+				if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
+					player1->x = player1->x -  STEPS;
+					player1->hitbox->x = player1->hitbox->x - STEPS;
+				}
+				else
+					player1->hurtbox->x = player1->hurtbox->x +  STEPS;
+			}
+
+			// pulo inicia com a velocidade maxima 
+			if (box_collision(player1->hurtbox, floor))
+				player1->vel = VEL_MAX;
+
+			// caso estiver pulando 
+			if ((player1->control->up) || !box_collision(player1->hurtbox, floor)) {
+				player1->hurtbox->y = player1->hurtbox->y - player1->vel * STEPS/2;
+				if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)) {
+					player1->y = player1->y - player1->vel *STEPS/2;
+					player1->hitbox->y = player1->hitbox->y -player1->vel * STEPS/2;
+					player1->vel = player1->vel - 1;
+				}
+				else
+					player1->hurtbox->y = player1->hurtbox->y + player1->vel * STEPS/2;
+
+			}
+
+			// classifica stateecao final
+			if (player1->y < in_y1)
+				player1->state = UP;
+			else
+			if (player1->y > in_y1)
+				player1->state = FALL;
+			else
+			if (player1->x > in_x1) {
+				player1->state = RUN;
+				player1->dir = RIGHT;
+			}
+			else
+			if (player1->x < in_x1) {
+				player1->state = RUN;
+				player1->dir = LEFT;
+			}
+			else
+				player1->state = IDLE;
+		}
 	}
 
 	
@@ -380,6 +425,27 @@ void player_animation(struct player *player)
 		case HIT2_5:
 			player_draw(player, 16, player->dir);
 			break;
+		case DASH1:
+			player_draw(player, 23, player->dir);
+			break;
+		case DASH2:
+			player_draw(player, 24, player->dir);
+			break;
+		case DASH3:
+			player_draw(player, 25, player->dir);
+			break;
+		case STUN1:
+			player_draw(player, 20, player->dir);
+			break;
+		case STUN2:
+			player_draw(player, 20, player->dir);
+			break;
+		case STUN3:
+			player_draw(player, 20, player->dir);
+			break;
+		case STUN4:
+			player_draw(player, 20, player->dir);
+			break;
 	}
 
 }
@@ -404,6 +470,8 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 		
 		case RUN1:
@@ -421,6 +489,8 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case RUN2:
@@ -438,6 +508,8 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case RUN3:
@@ -455,6 +527,8 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case RUN4:
@@ -472,6 +546,8 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case UP1:
@@ -528,11 +604,15 @@ void player_update_state(struct player *player)
 				player->frame = HIT1_1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case DOWN2:
 			if (player->state != DOWN)
 				player->frame = DOWN1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case HIT1_1:
@@ -566,6 +646,8 @@ void player_update_state(struct player *player)
 				player->frame = IDLE1;
 			if (player->state == ATTACK2)
 				player->frame = HIT2_1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;
 
 		case HIT2_1:
@@ -604,6 +686,48 @@ void player_update_state(struct player *player)
 				player->dir = LEFT;
 			else
 				player->dir = RIGHT;
+			if (player->state == DASH)
+				player->frame = DASH1;
+			break;
+
+		case DASH1:
+			player->frame = DASH2;
+			break;
+
+		case DASH2:
+			player->frame = DASH3;
+			break;
+
+		case DASH3:
+			if (player->state == RUN)
+				player->frame = RUN1;
+			if (player->state == UP)
+				player->frame = UP1;
+			if (player->state == DOWN)
+				player->frame = DOWN1;
+			if (player->state == IDLE)
+				player->frame = IDLE1;
+			if (player->state == ATTACK1)
+				player->frame = HIT1_1;
+			if (player->state == ATTACK2)
+				player->frame = HIT2_1;
+			break;	
+
+		case STUN1:
+			player->frame = STUN2;
+			break;
+
+		case STUN2:
+			player->frame = STUN3;
+			break;
+
+		case STUN3:
+			player->frame = STUN4;
+			break;
+
+		case STUN4:
+			player->frame = IDLE1;
+			player->state = IDLE;
 			break;
 	}
 }

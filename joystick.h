@@ -10,6 +10,7 @@ struct joystick {
 	char left;
 	char up;
 	char down;
+	char dash;
 	char hit1;
 	char hit2;
 	char active;
@@ -28,6 +29,8 @@ void joystick_left(struct joystick *element);
 void joystick_up(struct joystick *element);
 
 void joystick_down(struct joystick *element);
+
+void joystick_dash(struct joystick *element);
 
 void joystick_hit1(struct joystick *element);
 

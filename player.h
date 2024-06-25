@@ -29,6 +29,9 @@ enum Frames {
 	FALL4,
 	DOWN1,
 	DOWN2,
+	DASH1,
+	DASH2,
+	DASH3,
 	HIT1_1,
 	HIT1_2,
 	HIT1_3,
@@ -40,6 +43,10 @@ enum Frames {
 	HIT2_3,
 	HIT2_4,
 	HIT2_5,
+	STUN1,
+	STUN2,
+	STUN3,
+	STUN4,
 };
 
 enum State {
@@ -48,8 +55,10 @@ enum State {
 	UP,
 	DOWN,
 	FALL,
+	DASH,
 	ATTACK1,
 	ATTACK2,
+	STUNNED,
 };
 
 #define RIGHT 0
@@ -66,6 +75,7 @@ enum State {
 struct player {
 	enum Pony id;
 	short hp;
+	short win;
 	short vel;
 	short x;
 	short y;
