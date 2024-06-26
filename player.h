@@ -32,6 +32,8 @@ enum Frames {
 	DASH1,
 	DASH2,
 	DASH3,
+	DASH4,
+	DASH5,
 	HIT1_1,
 	HIT1_2,
 	HIT1_3,
@@ -47,6 +49,9 @@ enum Frames {
 	STUN2,
 	STUN3,
 	STUN4,
+	COMBO1,
+	COMBO2,
+	COMBO3,
 };
 
 enum State {
@@ -59,6 +64,7 @@ enum State {
 	ATTACK1,
 	ATTACK2,
 	STUNNED,
+	COMBO,
 };
 
 #define RIGHT 0
@@ -77,6 +83,7 @@ struct player {
 	short hp;
 	short win;
 	short vel;
+	short dash;
 	short x;
 	short y;
 	float resize;

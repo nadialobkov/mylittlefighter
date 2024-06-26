@@ -13,6 +13,7 @@ struct joystick {
 	char dash;
 	char hit1;
 	char hit2;
+	char combo;
 	char active;
 };
 
@@ -35,5 +36,8 @@ void joystick_dash(struct joystick *element);
 void joystick_hit1(struct joystick *element);
 
 void joystick_hit2(struct joystick *element);
+
+void joystick_combo(struct joystick *element);
+
 
 #endif

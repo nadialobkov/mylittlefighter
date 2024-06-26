@@ -15,11 +15,18 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap, enum Pony player_i
 
 
 	if (player_id == PINKIE) {
-		for (short i = 0; i <= 25; i++) {
+		for (short i = 0; i <= 28; i++) {
 			sprintf(string, "./sprites/players/pinkie/pinkie_%d.png", i);
 			bitmap[i] = al_load_bitmap(string);
 		}
 	}
+	if (player_id == RARITY) {
+		for (short i = 0; i <= 28; i++) {
+			sprintf(string, "./sprites/players/rarity/rarity_%d.png", i);
+			bitmap[i] = al_load_bitmap(string);
+		}
+	}
+	
 
 	free(string);
 	return (bitmap);
@@ -36,12 +43,13 @@ struct player *player_create(enum Pony id, short x, short y, float resize)
 	new_player->frame = IDLE1;
 	new_player->dir = RIGHT;
 	new_player->hp = 100;
+	new_player->dash = 100;
 	new_player->vel= VEL_MAX;
 	new_player->x = x;
 	new_player->y = y;
 	new_player->resize = resize;
 
-	new_player->bitmap = malloc(26 * sizeof(ALLEGRO_BITMAP*));
+	new_player->bitmap = malloc(29 * sizeof(ALLEGRO_BITMAP*));
 	new_player->bitmap = player_load_bitmap(new_player->bitmap, id);	
 
 	short side_x = al_get_bitmap_width(new_player->bitmap[0]) * resize;
@@ -129,6 +137,8 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_hit1(player1->control);
 	if (keycode == ALLEGRO_KEY_5)
 		joystick_hit2(player1->control);
+	if (keycode == ALLEGRO_KEY_6)
+		joystick_combo(player1->control);
 	
 
 	if (keycode == ALLEGRO_KEY_LEFT)
@@ -153,7 +163,7 @@ void player_attack(struct player *player1, struct player *player2)
 		return;
 
 	// player nao pode atacar durante pulo ou descida
-	if ((player1->state != UP) && (player1->state != FALL) && (player1->state != DASH && (player1->state != STUNNED))) {
+	if ((player1->state != UP) && (player1->state != FALL) && (player1->state != DASH) && (player1->state != STUNNED)) {
 
 		if (player1->control->hit1 && player1->state != ATTACK2) {
 			player1->state = ATTACK1;
@@ -163,8 +173,11 @@ void player_attack(struct player *player1, struct player *player2)
 		}
 		if (player1->state == ATTACK1) {
 
-			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox))
-					player2->hp = player2->hp - 1;
+			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
+				player2->hp = player2->hp - 1;
+				player2->state = STUNNED;
+				player2->frame = STUN2;
+			}
 
 			if (player1->frame == HIT1_4) {
 				player1->hitbox->active = ACTIVE;
@@ -175,20 +188,27 @@ void player_attack(struct player *player1, struct player *player2)
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y - STEPS*3/2;
 
-				player2->state = STUNNED;
-				player2->frame = STUN2;
 			}
-			if (player1->frame == HIT1_6) {
+			if (player1->frame == HIT1_5) {
 				player1->hitbox->active = !ACTIVE;
 				player1->hitbox->x = player1->hurtbox->x;
 				player1->hitbox->y = player1->hurtbox->y;
-				player1->state = IDLE;
+
+				if (player1->control->combo) {
+					player1->state = COMBO;
+					player1->frame = COMBO1;
+				}
 			}
+			if (player1->frame == HIT1_6)
+				player1->state = IDLE;
 		}
 		if (player1->state == ATTACK2) {
 
-			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox))
-					player2->hp = player2->hp - 2;
+			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
+				player2->hp = player2->hp - 1;
+				player2->state = STUNNED;
+				player2->frame = STUN2;
+			}
 
 			if (player1->frame == HIT2_3) {
 				player1->hitbox->active = ACTIVE;
@@ -199,8 +219,6 @@ void player_attack(struct player *player1, struct player *player2)
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y + STEPS;
 
-				player2->state = STUNNED;
-				player2->frame = STUN2;
 			}
 			if (player1->frame == HIT2_5) {
 				player1->hitbox->active = !ACTIVE;
@@ -209,6 +227,32 @@ void player_attack(struct player *player1, struct player *player2)
 				player1->state = IDLE;
 			}
 		}
+		if (player1->state == COMBO) {
+
+			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
+				player2->hp = player2->hp - 4;
+				player2->state = STUNNED;
+				player2->frame = STUN1;
+			}
+
+			if (player1->frame == COMBO2) {
+				player1->hitbox->active = ACTIVE;
+				short move = STEPS;
+				if (player1->dir == LEFT) {
+					move *= -1;
+				}
+				player1->hitbox->x = player1->hitbox->x + move*3;
+				player1->hitbox->y = player1->hitbox->y - STEPS*3/2;
+			}
+
+			if (player1->frame == COMBO3) {
+				player1->hitbox->active = !ACTIVE;
+				player1->hitbox->x = player1->hurtbox->x;
+				player1->hitbox->y = player1->hurtbox->y;
+				player1->state = HIT1_6;
+			}
+		}
+			
 	}
 		
 
@@ -219,7 +263,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	if (!player1->control->active || !player2->control->active)
 		return;
 
-	if (player1->state == ATTACK1 || player1->state == ATTACK2 || player1->state == STUNNED)
+	if (player1->state == ATTACK1 || player1->state == ATTACK2 || player1->state == STUNNED || player1->state == COMBO)
 		return;
 
 	// salva posicao inicial
@@ -227,9 +271,15 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	short in_y1 = player1->y;
 
 	// movimento do player 1
-	
-	if (player1->control->dash) {
+	if (player1->dash < 100)
+		player1->dash = player1->dash + 1;
 
+
+	printf ("dash: %d \n", player1->dash);
+	if (player1->control->dash && (player1->dash >= 30)) {
+
+		player1->dash = player1->dash - 10;
+		
 		short dir;
 		if (player1->control->right) {
 			player1->dir = RIGHT;
@@ -434,6 +484,12 @@ void player_animation(struct player *player)
 		case DASH3:
 			player_draw(player, 25, player->dir);
 			break;
+		case DASH4:
+			player_draw(player, 26, player->dir);
+			break;
+		case DASH5:
+			player_draw(player, 27, player->dir);
+			break;
 		case STUN1:
 			player_draw(player, 20, player->dir);
 			break;
@@ -445,6 +501,15 @@ void player_animation(struct player *player)
 			break;
 		case STUN4:
 			player_draw(player, 20, player->dir);
+			break;
+		case COMBO1:
+			player_draw(player, 11, player->dir);
+			break;
+		case COMBO2:
+			player_draw(player, 21, player->dir);
+			break;
+		case COMBO3:
+			player_draw(player, 22, player->dir);
 			break;
 	}
 
@@ -633,6 +698,8 @@ void player_update_state(struct player *player)
 
 		case HIT1_5:
 			player->frame = HIT1_6;
+			if (player->state == COMBO)
+				player->frame = COMBO1;
 			break;
 
 		case HIT1_6:
@@ -699,18 +766,17 @@ void player_update_state(struct player *player)
 			break;
 
 		case DASH3:
-			if (player->state == RUN)
-				player->frame = RUN1;
-			if (player->state == UP)
-				player->frame = UP1;
-			if (player->state == DOWN)
-				player->frame = DOWN1;
-			if (player->state == IDLE)
-				player->frame = IDLE1;
-			if (player->state == ATTACK1)
-				player->frame = HIT1_1;
-			if (player->state == ATTACK2)
-				player->frame = HIT2_1;
+			player->frame = DASH4;
+			break;
+
+		case DASH4:
+			player->frame = DASH5;
+			break;
+
+		case DASH5:
+			player->frame = IDLE1;
+			if (player->state == DASH)
+				player->frame = DASH1;
 			break;	
 
 		case STUN1:
@@ -728,6 +794,18 @@ void player_update_state(struct player *player)
 		case STUN4:
 			player->frame = IDLE1;
 			player->state = IDLE;
+			break;
+
+		case COMBO1:
+			player->frame = COMBO2;
+			break;
+
+		case COMBO2:
+			player->frame = COMBO3;
+			break;
+
+		case COMBO3:
+			player->frame = HIT1_6;
 			break;
 	}
 }

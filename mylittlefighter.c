@@ -39,6 +39,25 @@ ALLEGRO_BITMAP *background_sel(enum Backgrounds back)
 	return background;
 }
 
+ALLEGRO_BITMAP *round_sel(short num)
+{
+	ALLEGRO_BITMAP *round;
+
+	switch (num) {
+		case 1:
+			round = al_load_bitmap("./sprites/text/round1.png");
+			break;
+		case 2:
+			round = al_load_bitmap("./sprites/text/round2.png");
+			break;
+		case 3:
+			round = al_load_bitmap("./sprites/text/round3.png");
+			break;
+	}
+	
+	return round;
+}
+
 
 struct mlf *mlf_create_game()
 {
@@ -320,8 +339,10 @@ void mlf_start_fight(struct mlf *game)
 					if (cooldown >= 2 * FPS)
 						draw_image_resized(text1, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
 					else
-						if (cooldown >= FPS)
-							draw_image_resized(text_fight, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+						if (cooldown >= FPS) {
+							ALLEGRO_BITMAP *round = round_sel(game->round);
+							draw_image_resized(round, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
+						}
 						else	
 							draw_image_resized(text_fight, X_SCREEN/2, Y_SCREEN/2, 0.5 * RESIZE_SCREEN);
 						
@@ -355,6 +376,7 @@ void mlf_fight(struct mlf *game)
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
+	ALLEGRO_BITMAP *round = round_sel(game->round);
 	
 	game->player1->control->active = 1;
 	game->player2->control->active = 1;
@@ -393,6 +415,8 @@ void mlf_fight(struct mlf *game)
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(round, X_SCREEN/2, Y_SCREEN*0.23, 0.2 * RESIZE_SCREEN);
+
 
 			al_flip_display();	
 		}

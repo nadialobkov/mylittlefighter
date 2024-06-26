@@ -11,9 +11,10 @@ struct joystick *joystick_create()
 	new_js->left = 0;
 	new_js->up = 0;
 	new_js->down = 0;
-	new_js->dash= 0;
-	new_js->hit1= 0;
-	new_js->hit2= 0;
+	new_js->dash = 0;
+	new_js->hit1 = 0;
+	new_js->hit2 = 0;
+	new_js->combo = 0;
 	new_js->active = 1;
 
 	return (new_js);
@@ -66,4 +67,10 @@ void joystick_hit2(struct joystick *control)
 {
 	if (control->active)
 		control->hit2 = control->hit2 ^ 1;
+}
+
+void joystick_combo(struct joystick *control)
+{
+	if (control->active)
+		control->combo = control->combo ^ 1;
 }
