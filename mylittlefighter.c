@@ -58,6 +58,21 @@ ALLEGRO_BITMAP *round_sel(short num)
 	return round;
 }
 
+ALLEGRO_BITMAP *player_win_sel(short num)
+{
+	ALLEGRO_BITMAP *player;
+
+	switch (num) {
+		case 1:
+			player = al_load_bitmap("./sprites/text/player1.png");
+			break;
+		case 2:
+			player = al_load_bitmap("./sprites/text/player2.png");
+			break;
+	}
+	
+	return player;
+}
 
 struct mlf *mlf_create_game()
 {
@@ -304,9 +319,8 @@ void mlf_start_fight(struct mlf *game)
 	ALLEGRO_BITMAP *text_fight = al_load_bitmap("./sprites/text/fight.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
 
-	game->player1->control->active = 0;
-	game->player2->control->active = 0;
-	game->player2->dir = LEFT;
+	player_init(game->player1, 1);
+	player_init(game->player2, 2);
 	
 	short cooldown = 5 *FPS;
 
@@ -415,7 +429,12 @@ void mlf_fight(struct mlf *game)
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
-			draw_image_resized(round, X_SCREEN/2, Y_SCREEN*0.23, 0.2 * RESIZE_SCREEN);
+			draw_image_resized(round, X_SCREEN/2, Y_SCREEN/4, 0.2 * RESIZE_SCREEN);
+
+			if (player_win(game->player1, game->player2)) {
+				game->state = PLAYER_WIN;		
+				break;
+			}
 
 
 			al_flip_display();	
@@ -433,7 +452,76 @@ void mlf_fight(struct mlf *game)
 	al_destroy_bitmap(mlf_logo);
 	al_destroy_bitmap(white_bar);
 	al_destroy_bitmap(background);
+	al_destroy_bitmap(round);
 }
+
+void mlf_player_win(struct mlf *game)
+{
+	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.9, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
+	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
+	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *victory = al_load_bitmap("./sprites/text/victory.png");
+	ALLEGRO_BITMAP *background = background_sel(game->back);
+
+	ALLEGRO_BITMAP *player = player_win_sel(player_win(game->player1, game->player2));
+
+	printf("player win: %d \n", player_win(game->player1, game->player2));
+
+	game->player1->control->active = 0;
+	game->player2->control->active = 0;
+	game->player2->dir = LEFT;
+	
+	short cooldown = 5 *FPS;
+
+	while (game->state == PLAYER_WIN) {
+
+		al_wait_for_event(game->queue, &(game->event));
+
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			game->mouse_x = game->event.mouse.x;
+			game->mouse_y = game->event.mouse.y;
+		}
+		if (game->event.type == ALLEGRO_EVENT_TIMER) {
+			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
+			
+			player_animation(game->player1);
+			player_animation(game->player2);
+
+			if (cooldown == 0) {
+				game->round = game->round + 1;
+				game->state = START_FIGHT;
+			}
+
+			cooldown--;
+			
+			
+
+			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
+			player_draw_hp(game->player1->hp, 1);
+			player_draw_hp(game->player2->hp, 2);
+			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+
+			draw_image_resized(victory, X_SCREEN/2, Y_SCREEN*0.40, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(player, X_SCREEN/2, Y_SCREEN*0.50, 0.5 * RESIZE_SCREEN);
+
+			al_flip_display();	
+		}
+
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
+		}
+	}
+
+	box_destroy(floor);
+	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(white_bar);
+	al_destroy_bitmap(background);
+	al_destroy_bitmap(victory);
+	al_destroy_bitmap(player);
+}
+
+
+
 void mlf_update_game(struct mlf *game)
 {
 	switch (game->state) {
@@ -453,7 +541,9 @@ void mlf_update_game(struct mlf *game)
 		case FIGHT:
 			mlf_fight(game);
 			break;
-
+		case PLAYER_WIN:
+			mlf_player_win(game);
+			break;
 	}
 }
 	

@@ -84,6 +84,16 @@ void player_destroy(struct player *player)
 	free(player);
 }
 
+void player_init(struct player *player, short num)
+{
+	player->hp = 100;
+	player->control->active = 0;
+	
+	if (num == 1)
+		player->dir = RIGHT;
+	else
+		player->dir = LEFT;
+}
 
 void player_draw(struct player *player, short frame, char dir)
 {
@@ -121,6 +131,21 @@ void player_draw_hp(short hp, short num)
 
 }
 
+short player_win(struct player *player1, struct player *player2)
+{
+	if (player1->hp <= 0) {
+		player2->win = player2->win + 1;
+		return 2;
+	}
+
+	if (player2->hp <= 0) {
+		player1->win = player1->win + 1;
+		return 1;
+	}
+
+	return 0;
+}
+
 void player_update_joystick(struct player *player1, struct player *player2, int keycode)
 {
 	if (keycode == ALLEGRO_KEY_A) 
@@ -133,11 +158,11 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_down(player1->control);
 	if (keycode == ALLEGRO_KEY_R)
 		joystick_dash(player1->control);
-	if (keycode == ALLEGRO_KEY_4) 
+	if (keycode == ALLEGRO_KEY_6) 
 		joystick_hit1(player1->control);
-	if (keycode == ALLEGRO_KEY_5)
+	if (keycode == ALLEGRO_KEY_7)
 		joystick_hit2(player1->control);
-	if (keycode == ALLEGRO_KEY_6)
+	if (keycode == ALLEGRO_KEY_8)
 		joystick_combo(player1->control);
 	
 
@@ -149,10 +174,12 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_up(player2->control);
 	if (keycode == ALLEGRO_KEY_DOWN)
 		joystick_down(player2->control);
-	if (keycode == ALLEGRO_KEY_SEMICOLON) 
+	if (keycode == ALLEGRO_KEY_PAD_1) 
 		joystick_hit1(player2->control);
-	if (keycode == ALLEGRO_KEY_SLASH)
+	if (keycode == ALLEGRO_KEY_PAD_2)
 		joystick_hit2(player2->control);
+	if (keycode == ALLEGRO_KEY_PAD_3)
+		joystick_combo(player2->control);
 	
 }	
 
@@ -275,7 +302,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 		player1->dash = player1->dash + 1;
 
 
-	printf ("dash: %d \n", player1->dash);
+//	printf ("dash: %d \n", player1->dash);
 	if (player1->control->dash && (player1->dash >= 30)) {
 
 		player1->dash = player1->dash - 10;

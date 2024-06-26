@@ -114,6 +114,9 @@ void player_animation(struct player *player);
 
 void player_update_state(struct player *player);
 
+short player_win(struct player *player1, struct player *player2);
+
+void player_init(struct player *player, short num);
 //void player_update_position(struct player *playerP);
 
 
