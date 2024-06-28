@@ -58,6 +58,30 @@ ALLEGRO_BITMAP *round_sel(short num)
 	return round;
 }
 
+ALLEGRO_BITMAP *player_icon_sel(short id, short num)
+{
+	ALLEGRO_BITMAP *icon;
+
+	switch (id) {
+		case PINKIE:
+			if (num == 1) 
+				icon = al_load_bitmap("./sprites/buttons/icon_pinkie.png");
+			else
+				icon = al_load_bitmap("./sprites/buttons/icon_pinkie_ch.png");
+			break;
+
+		case RARITY:
+			if (num == 1) 
+				icon = al_load_bitmap("./sprites/buttons/icon_rarity.png");
+			else
+				icon = al_load_bitmap("./sprites/buttons/icon_rarity_ch.png");
+			break;
+	}
+	
+	return icon;
+
+}
+
 ALLEGRO_BITMAP *player_win_sel(short num)
 {
 	ALLEGRO_BITMAP *player;
@@ -216,8 +240,8 @@ void mlf_menu_player_sel(struct mlf *game)
 	}
 
 
-	game->player1 = player_create(player1_id, X_SCREEN/4, Y_SCREEN*3/4, 0.4 * RESIZE_SCREEN);
-	game->player2 = player_create(player2_id, X_SCREEN*3/4, Y_SCREEN*3/4, 0.4 * RESIZE_SCREEN);
+	game->player1 = player_create(player1_id, X_SCREEN/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
+	game->player2 = player_create(player2_id, X_SCREEN*3/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
 
 	button_destroy(back);
 	button_destroy(next);
@@ -318,7 +342,12 @@ void mlf_start_fight(struct mlf *game)
 	ALLEGRO_BITMAP *text3 = al_load_bitmap("./sprites/text/3.png");
 	ALLEGRO_BITMAP *text_fight = al_load_bitmap("./sprites/text/fight.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
+	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
+	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
 
+
+	joystick_reset(game->player1->control);
+	joystick_reset(game->player2->control);
 	player_init(game->player1, 1);
 	player_init(game->player2, 2);
 	
@@ -365,6 +394,8 @@ void mlf_start_fight(struct mlf *game)
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 
 			al_flip_display();	
 		}
@@ -382,6 +413,8 @@ void mlf_start_fight(struct mlf *game)
 	al_destroy_bitmap(text2);
 	al_destroy_bitmap(text3);
 	al_destroy_bitmap(text_fight);
+	al_destroy_bitmap(icon_p1);
+	al_destroy_bitmap(icon_p2);
 }
 
 void mlf_fight(struct mlf *game)
@@ -391,6 +424,8 @@ void mlf_fight(struct mlf *game)
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
 	ALLEGRO_BITMAP *round = round_sel(game->round);
+	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
+	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
 	
 	game->player1->control->active = 1;
 	game->player2->control->active = 1;
@@ -430,6 +465,8 @@ void mlf_fight(struct mlf *game)
 			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(round, X_SCREEN/2, Y_SCREEN/4, 0.2 * RESIZE_SCREEN);
+			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 
 			if (player_win(game->player1, game->player2)) {
 				game->state = PLAYER_WIN;		
@@ -453,6 +490,8 @@ void mlf_fight(struct mlf *game)
 	al_destroy_bitmap(white_bar);
 	al_destroy_bitmap(background);
 	al_destroy_bitmap(round);
+	al_destroy_bitmap(icon_p1);
+	al_destroy_bitmap(icon_p2);
 }
 
 void mlf_player_win(struct mlf *game)
@@ -462,6 +501,8 @@ void mlf_player_win(struct mlf *game)
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
 	ALLEGRO_BITMAP *victory = al_load_bitmap("./sprites/text/victory.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
+	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
+	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
 
 	ALLEGRO_BITMAP *player = player_win_sel(player_win(game->player1, game->player2));
 
@@ -469,7 +510,6 @@ void mlf_player_win(struct mlf *game)
 
 	game->player1->control->active = 0;
 	game->player2->control->active = 0;
-	game->player2->dir = LEFT;
 	
 	short cooldown = 5 *FPS;
 
@@ -500,6 +540,8 @@ void mlf_player_win(struct mlf *game)
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 
 			draw_image_resized(victory, X_SCREEN/2, Y_SCREEN*0.40, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(player, X_SCREEN/2, Y_SCREEN*0.50, 0.5 * RESIZE_SCREEN);
@@ -518,6 +560,8 @@ void mlf_player_win(struct mlf *game)
 	al_destroy_bitmap(background);
 	al_destroy_bitmap(victory);
 	al_destroy_bitmap(player);
+	al_destroy_bitmap(icon_p1);
+	al_destroy_bitmap(icon_p2);
 }
 
 

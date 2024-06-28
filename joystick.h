@@ -23,6 +23,8 @@ struct joystick *joystick_create();
 
 void joystick_destroy(struct joystick *element);
 
+void joystick_reset(struct joystick *control);
+
 void joystick_right(struct joystick *element);
 
 void joystick_left(struct joystick *element);

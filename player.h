@@ -15,43 +15,15 @@ enum Pony {
 // estados do personagem
 enum Frames {
 	IDLE1,
-	RUN1,
-	RUN2,
-	RUN3,
-	RUN4,
-	UP1,
-	UP2,
-	UP3,
-	UP4,
-	FALL1,
-	FALL2,
-	FALL3,
-	FALL4,
-	DOWN1,
-	DOWN2,
-	DASH1,
-	DASH2,
-	DASH3,
-	DASH4,
-	DASH5,
-	HIT1_1,
-	HIT1_2,
-	HIT1_3,
-	HIT1_4,
-	HIT1_5,
-	HIT1_6,
-	HIT2_1,
-	HIT2_2,
-	HIT2_3,
-	HIT2_4,
-	HIT2_5,
-	STUN1,
-	STUN2,
-	STUN3,
-	STUN4,
-	COMBO1,
-	COMBO2,
-	COMBO3,
+	RUN1,RUN2,RUN3,RUN4,
+	UP1,UP2,UP3,UP4,
+	FALL1,FALL2,FALL3,FALL4,
+	DOWN1,DOWN2,
+	DASH1,DASH2,DASH3,DASH4,DASH5,
+	HIT1_1,HIT1_2,HIT1_3,HIT1_4,HIT1_5,HIT1_6,
+	HIT2_1,HIT2_2,HIT2_3,HIT2_4,HIT2_5,
+	STUN1,STUN2,STUN3,STUN4,
+	COMBO1,COMBO2,COMBO3,
 };
 
 enum State {
@@ -117,6 +89,8 @@ void player_update_state(struct player *player);
 short player_win(struct player *player1, struct player *player2);
 
 void player_init(struct player *player, short num);
+
+
 //void player_update_position(struct player *playerP);
 
 

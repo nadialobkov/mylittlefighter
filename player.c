@@ -88,11 +88,23 @@ void player_init(struct player *player, short num)
 {
 	player->hp = 100;
 	player->control->active = 0;
+	player->y = Y_SCREEN*3/4;
+	player->state = IDLE;
+	player->frame = IDLE1;
 	
-	if (num == 1)
+	if (num == 1) {
 		player->dir = RIGHT;
-	else
+		player->x = X_SCREEN/4;
+	}
+	else {
 		player->dir = LEFT;
+		player->x = X_SCREEN*3/4;
+	}
+
+	player->hitbox->x = player->x;
+	player->hitbox->y = player->y;
+	player->hurtbox->x = player->x;
+	player->hurtbox->y = player->y;
 }
 
 void player_draw(struct player *player, short frame, char dir)
@@ -174,6 +186,8 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_up(player2->control);
 	if (keycode == ALLEGRO_KEY_DOWN)
 		joystick_down(player2->control);
+	if (keycode == ALLEGRO_KEY_PAD_0) 
+		joystick_dash(player2->control);
 	if (keycode == ALLEGRO_KEY_PAD_1) 
 		joystick_hit1(player2->control);
 	if (keycode == ALLEGRO_KEY_PAD_2)
@@ -201,7 +215,7 @@ void player_attack(struct player *player1, struct player *player2)
 		if (player1->state == ATTACK1) {
 
 			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
-				player2->hp = player2->hp - 1;
+				player2->hp = player2->hp - 3;
 				player2->state = STUNNED;
 				player2->frame = STUN2;
 			}
@@ -223,7 +237,6 @@ void player_attack(struct player *player1, struct player *player2)
 
 				if (player1->control->combo) {
 					player1->state = COMBO;
-					player1->frame = COMBO1;
 				}
 			}
 			if (player1->frame == HIT1_6)
@@ -257,7 +270,7 @@ void player_attack(struct player *player1, struct player *player2)
 		if (player1->state == COMBO) {
 
 			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
-				player2->hp = player2->hp - 4;
+				player2->hp = player2->hp - 5;
 				player2->state = STUNNED;
 				player2->frame = STUN1;
 			}
@@ -303,7 +316,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 
 
 //	printf ("dash: %d \n", player1->dash);
-	if (player1->control->dash && (player1->dash >= 30)) {
+	if (player1->control->dash && (player1->dash == 100)) {
 
 		player1->dash = player1->dash - 10;
 		
@@ -320,7 +333,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 			else
 				dir = 0;
 
-		float dash_vel = 1.5;
+		float dash_vel = 2;
 		if (dir != 0) {
 			player1->hurtbox->x = player1->hurtbox->x + dash_vel * dir * STEPS;
 			if (box_valid_position(player1->hurtbox) && box_valid_position(player2->hurtbox)){
@@ -836,145 +849,3 @@ void player_update_state(struct player *player)
 			break;
 	}
 }
-
-/*
-void player_update_state(struct player *playerP)
-{
-	if (!playerP->control->active)
-		return;
-
-	switch (playerP->state) {
-
-		case IDLE:
-			if (playerP->control->right)
-				playerP->state = RIGHT1;
-			else
-				if (playerP->control->left)
-					playerP->state = LEFT1;
-				else
-					if (playerP->control->up)
-						playerP->state = JUMP1;
-			break;
-
-		case RIGHT1:
-			playerP->state = RIGHT2;
-			break;
-
-		case RIGHT2:
-			if (playerP->control->right)
-				playerP->state = RIGHT1;
-			else 
-				if (playerP->control->left)
-					playerP->state = LEFT1;
-				else
-					if (playerP->control->up)
-						playerP->state = JUMP1;
-					else
-						playerP->state = IDLE;
-			break;
-
-		case LEFT1:
-			playerP->state = LEFT2;
-			break;
-
-		case LEFT2:
-			if (playerP->control->right)
-				playerP->state = RIGHT1;
-			else 
-				if (playerP->control->left)
-					playerP->state = LEFT1;
-				else
-					if (playerP->control->up)
-						playerP->state = JUMP1;
-					else
-						playerP->state = IDLE;
-			break;
-
-		case JUMP1:
-			playerP->state = JUMP2;
-			break;
-
-		case JUMP2:
-			playerP->state = JUMP3;
-			break;
-
-		case JUMP3:
-			playerP->state = JUMP4;
-			break;
-
-		case JUMP4:
-			playerP->state = JUMP5;
-			break;
-
-		case JUMP5:
-			if (playerP->control->right)
-				playerP->state = RIGHT1;
-			else 
-				if (playerP->control->left)
-					playerP->state = LEFT1;
-				else
-					if (playerP->control->up)
-						playerP->state = JUMP1;
-					else
-						playerP->state = IDLE;
-			break;
-	}
-}
-
-void player_update_position(struct player *playerP)
-{
-
-
-	
-	switch (playerP->state) {
-
-		case IDLE:
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case RIGHT1:
-			player_move(playerP, 1, RIGHT);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case RIGHT2:
-			player_move(playerP, 1, RIGHT);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case LEFT1:
-			player_move(playerP, 1, LEFT);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case LEFT2:
-			player_move(playerP, 1, LEFT);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case JUMP1:
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case JUMP2:
-			player_move(playerP, 2, UP);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case JUMP3:
-			player_move(playerP, 2, UP);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case JUMP4:
-			player_move(playerP, 2, DOWN);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-		case JUMP5:
-			player_move(playerP, 2, DOWN);
-			box_draw(playerP->hurtbox, 255, 102, 255);
-	//		player_draw(playerP);
-			break;
-	}
-}*/

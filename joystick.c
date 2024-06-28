@@ -7,15 +7,7 @@ struct joystick *joystick_create()
 {
 	struct joystick *new_js = malloc(sizeof(struct joystick));
 
-	new_js->right = 0;
-	new_js->left = 0;
-	new_js->up = 0;
-	new_js->down = 0;
-	new_js->dash = 0;
-	new_js->hit1 = 0;
-	new_js->hit2 = 0;
-	new_js->combo = 0;
-	new_js->active = 1;
+	joystick_reset(new_js);
 
 	return (new_js);
 }
@@ -26,6 +18,18 @@ void joystick_destroy(struct joystick *control)
 	free(control);
 }
 
+void joystick_reset(struct joystick *control)
+{
+	control->right = 0;
+	control->left = 0;
+	control->up = 0;
+	control->down = 0;
+	control->dash = 0;
+	control->hit1 = 0;
+	control->hit2 = 0;
+	control->combo = 0;
+	control->active = 0;
+}
 
 void joystick_right(struct joystick *control)
 {
