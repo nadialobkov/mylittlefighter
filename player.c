@@ -139,8 +139,26 @@ void player_draw_hp(short hp, short num)
 		al_draw_filled_rectangle(X_SCREEN*0.18 + size, Y_SCREEN*0.1, X_SCREEN*0.45, Y_SCREEN*0.15, al_map_rgb(r, g, 0));		
 	else
 		al_draw_filled_rectangle(X_SCREEN*0.55, Y_SCREEN*0.1, X_SCREEN*0.82 - size, Y_SCREEN*0.15, al_map_rgb(r, g, 0));		
+}
 
+void player_draw_dash(short dash, short num)
+{
+	short r, g;
+	if (dash == 100) {
+		r = 77;
+		g = 219;
+	}
+	else {
+		r = 179;
+		g = 240;
+	}
 
+			
+	short size = (X_SCREEN*0.15) * (100 - dash)/100;
+	if (num == 1)
+		al_draw_filled_rectangle(X_SCREEN*0.30 + size, Y_SCREEN*0.15, X_SCREEN*0.45, Y_SCREEN*0.17, al_map_rgb(r, g, 255));		
+	else
+		al_draw_filled_rectangle(X_SCREEN*0.55, Y_SCREEN*0.15, X_SCREEN*0.70 - size, Y_SCREEN*0.17, al_map_rgb(r, g, 255));		
 }
 
 short player_win(struct player *player1, struct player *player2)
@@ -215,7 +233,7 @@ void player_attack(struct player *player1, struct player *player2)
 		if (player1->state == ATTACK1) {
 
 			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
-				player2->hp = player2->hp - 3;
+				player2->hp = player2->hp - DAMAGE;
 				player2->state = STUNNED;
 				player2->frame = STUN2;
 			}
@@ -245,7 +263,7 @@ void player_attack(struct player *player1, struct player *player2)
 		if (player1->state == ATTACK2) {
 
 			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
-				player2->hp = player2->hp - 1;
+				player2->hp = player2->hp - DAMAGE;
 				player2->state = STUNNED;
 				player2->frame = STUN2;
 			}
@@ -260,29 +278,41 @@ void player_attack(struct player *player1, struct player *player2)
 				player1->hitbox->y = player1->hitbox->y + STEPS;
 
 			}
-			if (player1->frame == HIT2_5) {
+			if (player1->frame == HIT2_4) {
 				player1->hitbox->active = !ACTIVE;
 				player1->hitbox->x = player1->hurtbox->x;
 				player1->hitbox->y = player1->hurtbox->y;
-				player1->state = IDLE;
 			}
+			if (player1->frame == HIT2_5)
+				player1->state = IDLE;
 		}
 		if (player1->state == COMBO) {
 
+			short move = STEPS;
+			if (player1->dir == LEFT) {
+				move *= -1;
+			}
+
 			if (player1->hitbox->active && box_collision(player1->hitbox, player2->hurtbox)) {
-				player2->hp = player2->hp - 5;
+				player2->hp = player2->hp - 2*DAMAGE;
 				player2->state = STUNNED;
 				player2->frame = STUN1;
+
+				player2->hurtbox->x = player2->hurtbox->x + 2*move;
+				if (box_valid_position(player2->hurtbox)){
+					player2->x = player2->x + 2*move;
+					player2->hitbox->x = player2->hitbox->x + 2*move;
+				}
+				else
+					player2->hurtbox->x = player2->hurtbox->x - 2*move;
 			}
 
 			if (player1->frame == COMBO2) {
 				player1->hitbox->active = ACTIVE;
-				short move = STEPS;
-				if (player1->dir == LEFT) {
-					move *= -1;
-				}
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y - STEPS*3/2;
+
+				
 			}
 
 			if (player1->frame == COMBO3) {
@@ -317,6 +347,17 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 
 //	printf ("dash: %d \n", player1->dash);
 	if (player1->control->dash && (player1->dash == 100)) {
+		player1->state = DASH;
+	}
+
+	if (player1->state == DASH) {
+		// verifica se dash ainda esta ativo
+		if (!player1->control->dash || player1->dash <= 0)
+			player1->state = IDLE;
+
+		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
+		short new_y = player1->y + side_y /4;
+		player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y /2, 1);
 
 		player1->dash = player1->dash - 10;
 		
@@ -349,8 +390,6 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 		
 			else
 				player1->hurtbox->x = player1->hurtbox->x -  dash_vel * dir *STEPS;
-			
-			player1->state = DASH;
 		}
 	}		
 	else {	

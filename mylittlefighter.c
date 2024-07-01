@@ -26,7 +26,7 @@ ALLEGRO_BITMAP *background_sel(enum Backgrounds back)
 
 	switch (back) {
 		case CASTLE:
-			background = al_load_bitmap("./sprites/backgrounds/castle.png");
+			background = al_load_bitmap("./sprites/backgrounds/castle_of_friendship.png");
 			break;
 		case PONYVILLE:
 			background = al_load_bitmap("./sprites/backgrounds/ponyville.png");
@@ -104,6 +104,7 @@ struct mlf *mlf_create_game()
 
 	game->state = MENU_START;
 	game->round = 1;
+	game->paused = 0;
 	game->player1 = NULL; 
 	game->player2 = NULL;
 	game->queue = al_create_event_queue();
@@ -165,10 +166,10 @@ void mlf_menu_start(struct mlf *game)
 
 void mlf_menu_player_sel(struct mlf *game)
 {
-	struct button *p1_icon0 = button_create("./sprites/buttons/icon_pinkie.png", X_SCREEN /4, Y_SCREEN /2 + Y_SCREEN/15, 0.1 * RESIZE_SCREEN);
-	struct button *p1_icon1 = button_create("./sprites/buttons/icon_rarity.png", X_SCREEN /4 + X_SCREEN /15, Y_SCREEN /2 + Y_SCREEN/15, 0.1 * RESIZE_SCREEN);
-	struct button *p2_icon0 = button_create("./sprites/buttons/icon_pinkie_ch.png", X_SCREEN /2 + X_SCREEN /15 + 40, Y_SCREEN /2 + Y_SCREEN/15, 0.1 * RESIZE_SCREEN);
-	struct button *p2_icon1 = button_create("./sprites/buttons/icon_rarity_ch.png", X_SCREEN /2 + X_SCREEN *2/15 + 40, Y_SCREEN /2 + Y_SCREEN/15, 0.1 * RESIZE_SCREEN);
+	struct button *p1_icon0 = button_create("./sprites/buttons/icon_pinkie.png", X_SCREEN*0.28, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
+	struct button *p1_icon1 = button_create("./sprites/buttons/icon_rarity.png", X_SCREEN*0.36, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
+	struct button *p2_icon0 = button_create("./sprites/buttons/icon_pinkie_ch.png", X_SCREEN*0.6, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
+	struct button *p2_icon1 = button_create("./sprites/buttons/icon_rarity_ch.png", X_SCREEN*0.68, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
 	struct button *back = button_create("./sprites/buttons/back.png", X_SCREEN/12, Y_SCREEN*10/12, RESIZE_SCREEN);
 	struct button *next = button_create("./sprites/buttons/next.png", X_SCREEN*11/12, Y_SCREEN*10/12, RESIZE_SCREEN);
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
@@ -199,13 +200,13 @@ void mlf_menu_player_sel(struct mlf *game)
 			button_update(p2_icon1, game->mouse_x, game->mouse_y);
 
 			if (player1_id == PINKIE)
-				draw_image_resized(text_pinkie, X_SCREEN/3, Y_SCREEN*0.84, RESIZE_SCREEN);
+				draw_image_resized(text_pinkie, X_SCREEN/3, Y_SCREEN*0.88, RESIZE_SCREEN);
 			if (player2_id == PINKIE)
-				draw_image_resized(text_pinkie, X_SCREEN*2/3, Y_SCREEN*8.4/10, RESIZE_SCREEN);
+				draw_image_resized(text_pinkie, X_SCREEN*2/3, Y_SCREEN*0.88, RESIZE_SCREEN);
 			if (player1_id == RARITY)
-				draw_image_resized(text_rarity, X_SCREEN/3, Y_SCREEN*8.4/10, RESIZE_SCREEN);
+				draw_image_resized(text_rarity, X_SCREEN/3, Y_SCREEN*0.88, RESIZE_SCREEN);
 			if (player2_id == RARITY)
-				draw_image_resized(text_rarity, X_SCREEN*2/3, Y_SCREEN*8.4/10, RESIZE_SCREEN);
+				draw_image_resized(text_rarity, X_SCREEN*2/3, Y_SCREEN*0.88, RESIZE_SCREEN);
 
 			if ((player1_id != -1) && (player2_id != -1))
 				button_update(next, game->mouse_x, game->mouse_y);
@@ -335,6 +336,7 @@ void mlf_menu_back_sel(struct mlf *game)
 void mlf_start_fight(struct mlf *game)
 {
 	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.9, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
+	struct button *pause = button_create("./sprites/buttons/pause.png", X_SCREEN*0.95, Y_SCREEN*0.1, 0.3*RESIZE_SCREEN);
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
 	ALLEGRO_BITMAP *text1 = al_load_bitmap("./sprites/text/1.png");
@@ -363,6 +365,7 @@ void mlf_start_fight(struct mlf *game)
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
 			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
+			button_update(pause, game->mouse_x, game->mouse_y);
 			
 			player_animation(game->player1);
 			player_animation(game->player2);
@@ -393,6 +396,8 @@ void mlf_start_fight(struct mlf *game)
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
+			player_draw_dash(game->player1->dash, 1);
+			player_draw_dash(game->player2->dash, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
@@ -442,14 +447,14 @@ void mlf_fight(struct mlf *game)
 		}
 		if (game->event.type == ALLEGRO_EVENT_TIMER) {
 			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
-			box_draw(floor, 0, 153, 51);
+			//box_draw(floor, 0, 153, 51);
 			player_attack(game->player1, game->player2);
 			player_attack(game->player2, game->player1);
 			player_move(game->player1, game->player2, floor);
 			player_move(game->player2, game->player1, floor);
-			box_draw(game->player1->hurtbox, 255, 122, 255);
-			box_draw(game->player1->hitbox, 102, 0, 204);
-			box_draw(game->player2->hurtbox, 255, 122, 255);
+			//box_draw(game->player1->hurtbox, 255, 122, 255);
+			//box_draw(game->player1->hitbox, 102, 0, 204);
+			//box_draw(game->player2->hurtbox, 255, 122, 255);
 			player_animation(game->player1);
 			player_animation(game->player2);
 			if (!cooldown) {
@@ -463,6 +468,8 @@ void mlf_fight(struct mlf *game)
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
+			player_draw_dash(game->player1->dash, 1);
+			player_draw_dash(game->player2->dash, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(round, X_SCREEN/2, Y_SCREEN/4, 0.2 * RESIZE_SCREEN);
 			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
@@ -539,11 +546,13 @@ void mlf_player_win(struct mlf *game)
 			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
 			player_draw_hp(game->player1->hp, 1);
 			player_draw_hp(game->player2->hp, 2);
+			player_draw_dash(game->player1->dash, 1);
+			player_draw_dash(game->player2->dash, 2);
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 
-			draw_image_resized(victory, X_SCREEN/2, Y_SCREEN*0.40, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(victory, X_SCREEN/2, Y_SCREEN*0.40, 0.3 * RESIZE_SCREEN);
 			draw_image_resized(player, X_SCREEN/2, Y_SCREEN*0.50, 0.5 * RESIZE_SCREEN);
 
 			al_flip_display();	

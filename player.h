@@ -42,10 +42,11 @@ enum State {
 #define RIGHT 0
 #define LEFT 1
 
-#define STEPS 15 
+#define STEPS 20 
 #define RESIZE 10
 #define VEL_MAX 8
 #define VEL_MIN -8
+#define DAMAGE 5
 
 
 // ESTRUTURA  ======================================================
@@ -75,6 +76,8 @@ struct player *player_create(enum Pony id, short x, short y, float resize);
 void player_destroy(struct player *playerD);
 
 void player_draw_hp(short hp, short num);
+
+void player_draw_dash(short dash, short num);
 
 void player_update_joystick(struct player *player1, struct player *player2, int keycode);
 

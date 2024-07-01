@@ -26,6 +26,7 @@ enum Backgrounds {
 struct mlf {
 	enum Game_state state;
 	short round;
+	char paused;
 	struct player *player1;
 	struct player *player2;
 	enum Backgrounds back;
