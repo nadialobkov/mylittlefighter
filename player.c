@@ -74,7 +74,7 @@ void player_destroy(struct player *player)
 		box_destroy(player->hurtbox);
 	
 	if (player->bitmap) {
-		for (short i = 0; i <= 19; i++) {
+		for (short i = 0; i <= 28; i++) {
 			if (player->bitmap[i])
 				al_destroy_bitmap(player->bitmap[i]);
 		}
