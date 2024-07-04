@@ -15,6 +15,7 @@ enum Game_state {
 	START_FIGHT,
 	FIGHT,
 	PLAYER_WIN,
+	WINNER,
 };
 
 enum Backgrounds {

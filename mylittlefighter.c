@@ -98,6 +98,30 @@ ALLEGRO_BITMAP *player_win_sel(short num)
 	return player;
 }
 
+ALLEGRO_BITMAP *player_winner_sel(short id, short num)
+{
+	ALLEGRO_BITMAP *player;
+
+	switch (id) {
+		case PINKIE:
+			if (num == 1) 
+				player = al_load_bitmap("./sprites/menu/win/winner_pinkie1.png");
+			else
+				player = al_load_bitmap("./sprites/menu/win/winner_pinkie2.png");
+			break;
+
+		case RARITY:
+			if (num == 1) 
+				player = al_load_bitmap("./sprites/menu/win/winner_rarity1.png");
+			else
+				player = al_load_bitmap("./sprites/menu/win/winner_rarity2.png");
+			break;
+	}
+	
+	return player;
+
+}
+
 void reset_game(struct mlf *game)
 {
 	game->round = 1;
@@ -678,6 +702,103 @@ void mlf_player_win(struct mlf *game)
 }
 
 
+void mlf_winner(struct mlf *game)
+{
+	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.9, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
+	struct button *menu = button_create("./sprites/buttons/menu.png", X_SCREEN*0.5, Y_SCREEN*0.5, 0.3*RESIZE_SCREEN);
+	ALLEGRO_BITMAP *menu_op = al_load_bitmap("./sprites/menu/paused.png");
+	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
+	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *winner = al_load_bitmap("./sprites/text/winner.png");
+	ALLEGRO_BITMAP *background = background_sel(game->back);
+	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
+	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
+	ALLEGRO_BITMAP *player_winner;
+
+	ALLEGRO_BITMAP **paint = malloc(sizeof(ALLEGRO_BITMAP*));
+	char *string = malloc(sizeof(char) * 30);
+	for (int i = 0; i < 12; i++) {
+		sprintf(string, "./sprites/menu/win/paint%d.png", i);
+		paint[i] = al_load_bitmap(string);
+	}
+	free(string);
+
+	game->player1->control->active = 0;
+	game->player2->control->active = 0;
+
+	short num_player_winner;
+	short frame;
+	if (game->player1->win > game->player2->win) {
+		num_player_winner = 1;
+		frame = 0;
+		player_winner = player_winner_sel(game->player1->id, 1);
+	}
+	else {
+		num_player_winner = 2;
+		frame = 6;
+		player_winner = player_winner_sel(game->player2->id, 2);
+	}
+
+	
+	short cooldown = 3 *FPS;
+
+	while (game->state == WINNER) {
+
+		al_wait_for_event(game->queue, &(game->event));
+
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			game->mouse_x = game->event.mouse.x;
+			game->mouse_y = game->event.mouse.y;
+		}
+		if (game->event.type == ALLEGRO_EVENT_TIMER) {
+
+			draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
+			
+			player_animation(game->player1);
+			player_animation(game->player2);
+			draw_image_resized(white_bar, X_SCREEN/2, Y_SCREEN /8, RESIZE_SCREEN);
+			player_draw_hp(game->player1->hp, 1);
+			player_draw_hp(game->player2->hp, 2);
+			player_draw_dash(game->player1->dash, 1);
+			player_draw_dash(game->player2->dash, 2);
+			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
+			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+
+			if (cooldown == 0) {
+				button_update(menu, game->mouse_x, game->mouse_y);
+			}
+			else
+				cooldown--;
+
+			if (frame < frame + 6)
+				frame++;
+
+
+
+			al_flip_display();	
+		}
+
+		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+			if (button_pressed(menu, game->mouse_x, game->mouse_y, game->event)) {
+				reset_game(game);
+			}
+		}
+		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			break;
+		}
+	}
+
+	box_destroy(floor);
+	button_destroy(menu);
+	al_destroy_bitmap(mlf_logo);
+	al_destroy_bitmap(white_bar);
+	al_destroy_bitmap(background);
+	al_destroy_bitmap(winner);
+	al_destroy_bitmap(icon_p1);
+	al_destroy_bitmap(icon_p2);
+	al_destroy_bitmap(menu_op);
+}
 
 void mlf_update_game(struct mlf *game)
 {
@@ -700,6 +821,9 @@ void mlf_update_game(struct mlf *game)
 			break;
 		case PLAYER_WIN:
 			mlf_player_win(game);
+			break;
+		case WINNER:
+			mlf_winner(game);
 			break;
 	}
 }
