@@ -6,6 +6,8 @@
 #define Y_SCREEN 720
 #define RESIZE_SCREEN 0.67
 #define FPS 24
+#define PVP 0
+#define BOT 1
 
 
 enum Game_state {
@@ -28,6 +30,7 @@ struct mlf {
 	enum Game_state state;
 	short round;
 	char paused;
+	char mode;
 	struct player *player1;
 	struct player *player2;
 	enum Backgrounds back;

@@ -154,6 +154,7 @@ void reset_game(struct mlf *game)
 {
 	game->round = 1;
 	game->paused = 0;
+	game->mode = PVP;
 
 	if (!game->player1)
 		player_destroy(game->player1);
@@ -236,11 +237,15 @@ void mlf_menu_player_sel(struct mlf *game)
 	struct button *p2_icon1 = button_create("./sprites/buttons/icon_rarity_ch.png", X_SCREEN*0.68, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
 	struct button *back = button_create("./sprites/buttons/back.png", X_SCREEN/12, Y_SCREEN*10/12, RESIZE_SCREEN);
 	struct button *next = button_create("./sprites/buttons/next.png", X_SCREEN*11/12, Y_SCREEN*10/12, RESIZE_SCREEN);
+	struct button *change = button_create("./sprites/buttons/change.png", X_SCREEN*0.9, Y_SCREEN*0.12, RESIZE_SCREEN);
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *choose_player_display = al_load_bitmap("./sprites/menu/choose_char.png");
 	ALLEGRO_BITMAP *text_pinkie = al_load_bitmap("./sprites/text/pinkie_pie.png");
 	ALLEGRO_BITMAP *text_rarity = al_load_bitmap("./sprites/text/rarity.png");
+	ALLEGRO_BITMAP *text_mode = al_load_bitmap("./sprites/text/mode.png");
+	ALLEGRO_BITMAP *text_pvp = al_load_bitmap("./sprites/text/pvp.png");
+	ALLEGRO_BITMAP *text_bot = al_load_bitmap("./sprites/text/bot.png");
 
 	enum Pony player1_id = -1;
 	enum Pony player2_id = -1;
@@ -257,7 +262,9 @@ void mlf_menu_player_sel(struct mlf *game)
 			draw_image_resized(castle, X_SCREEN*0.5, Y_SCREEN*0.5, RESIZE_SCREEN);
 			draw_image_resized(mlf_logo, X_SCREEN*0.1, Y_SCREEN*0.12, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(choose_player_display, X_SCREEN*0.5, Y_SCREEN*0.45, RESIZE_SCREEN);
+			draw_image_resized(text_mode, X_SCREEN*0.8, Y_SCREEN*0.05, RESIZE_SCREEN);
 			button_update(back, game->mouse_x, game->mouse_y);
+			button_update(change, game->mouse_x, game->mouse_y);
 			button_update(p1_icon0, game->mouse_x, game->mouse_y);
 			button_update(p1_icon1, game->mouse_x, game->mouse_y);
 			button_update(p2_icon0, game->mouse_x, game->mouse_y);
@@ -310,6 +317,7 @@ void mlf_menu_player_sel(struct mlf *game)
 
 	button_destroy(back);
 	button_destroy(next);
+	button_destroy(change);
 	button_destroy(p1_icon0);
 	button_destroy(p1_icon1);
 	button_destroy(p2_icon0);
@@ -319,6 +327,9 @@ void mlf_menu_player_sel(struct mlf *game)
 	al_destroy_bitmap(choose_player_display);
 	al_destroy_bitmap(text_pinkie);
 	al_destroy_bitmap(text_rarity);
+	al_destroy_bitmap(text_mode);
+	al_destroy_bitmap(text_pvp);
+	al_destroy_bitmap(text_bot);
 }
 
 void mlf_menu_back_sel(struct mlf *game)
