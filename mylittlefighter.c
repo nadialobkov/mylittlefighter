@@ -122,6 +122,34 @@ ALLEGRO_BITMAP *player_winner_sel(short id, short num)
 
 }
 
+void draw_scoreboard(short score1, short score2)
+{
+	ALLEGRO_BITMAP *text0 = al_load_bitmap("./sprites/text/0.png");
+	ALLEGRO_BITMAP *text1 = al_load_bitmap("./sprites/text/1.png");
+	ALLEGRO_BITMAP *text2 = al_load_bitmap("./sprites/text/2.png");
+	ALLEGRO_BITMAP *textX = al_load_bitmap("./sprites/text/x.png");
+
+	draw_image_resized(textX, X_SCREEN*0.5, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+
+	if (score1 == 0)
+		draw_image_resized(text0, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score1 == 1)
+		draw_image_resized(text1, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score1 == 2)
+		draw_image_resized(text2, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 0)
+		draw_image_resized(text0, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 1)
+		draw_image_resized(text1, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 2)
+		draw_image_resized(text2, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	
+	al_destroy_bitmap(text0);
+	al_destroy_bitmap(text1);
+	al_destroy_bitmap(text2);
+	al_destroy_bitmap(textX);
+}
+
 void reset_game(struct mlf *game)
 {
 	game->round = 1;
@@ -393,6 +421,9 @@ void mlf_start_fight(struct mlf *game)
 	joystick_reset(game->player2->control);
 	player_init(game->player1, 1);
 	player_init(game->player2, 2);
+
+	if (game->player1->win == 2 || game->player2->win == 2)
+		game->state = WINNER;
 	
 	short cooldown = 5 *FPS;
 
@@ -556,6 +587,7 @@ void mlf_fight(struct mlf *game)
 				draw_image_resized(round, X_SCREEN/2, Y_SCREEN/4, 0.2 * RESIZE_SCREEN);
 				draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 				draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+				draw_scoreboard(game->player1->win, game->player2->win);
 
 				if (player_win(game->player1, game->player2)) {
 					game->state = PLAYER_WIN;		
@@ -622,7 +654,7 @@ void mlf_player_win(struct mlf *game)
 	game->player1->control->active = 0;
 	game->player2->control->active = 0;
 	
-	short cooldown = 5 *FPS;
+	short cooldown = 4 *FPS;
 
 	while (game->state == PLAYER_WIN) {
 
@@ -647,6 +679,11 @@ void mlf_player_win(struct mlf *game)
 				player_animation(game->player2);
 
 				if (cooldown == 0) {
+					if (player_win(game->player1, game->player2) == 1)
+						game->player1->win = game->player1->win + 1;
+					else
+						game->player2->win = game->player2->win + 1;
+
 					game->round = game->round + 1;
 					game->state = START_FIGHT;
 				}
@@ -705,17 +742,17 @@ void mlf_player_win(struct mlf *game)
 void mlf_winner(struct mlf *game)
 {
 	struct box *floor = box_create(X_SCREEN*0.5, Y_SCREEN*0.9, X_SCREEN, Y_SCREEN*0.1, RESIZE_SCREEN);
-	struct button *menu = button_create("./sprites/buttons/menu.png", X_SCREEN*0.5, Y_SCREEN*0.5, 0.3*RESIZE_SCREEN);
-	ALLEGRO_BITMAP *menu_op = al_load_bitmap("./sprites/menu/paused.png");
+	struct button *menu;
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *white_bar = al_load_bitmap("./sprites/menu/white_bar.png");
+	ALLEGRO_BITMAP *white_transp = al_load_bitmap("./sprites/menu/white_transp.png");
 	ALLEGRO_BITMAP *winner = al_load_bitmap("./sprites/text/winner.png");
 	ALLEGRO_BITMAP *background = background_sel(game->back);
 	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
 	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
-	ALLEGRO_BITMAP *player_winner;
+	ALLEGRO_BITMAP *player_winner, *player_text;
 
-	ALLEGRO_BITMAP **paint = malloc(sizeof(ALLEGRO_BITMAP*));
+	ALLEGRO_BITMAP **paint = malloc(12 * sizeof(ALLEGRO_BITMAP*));
 	char *string = malloc(sizeof(char) * 30);
 	for (int i = 0; i < 12; i++) {
 		sprintf(string, "./sprites/menu/win/paint%d.png", i);
@@ -726,21 +763,29 @@ void mlf_winner(struct mlf *game)
 	game->player1->control->active = 0;
 	game->player2->control->active = 0;
 
-	short num_player_winner;
 	short frame;
+	short x_player, y_player, x_text;
+	y_player = 2*Y_SCREEN;
+
 	if (game->player1->win > game->player2->win) {
-		num_player_winner = 1;
+		x_player = X_SCREEN*0.25;
+		x_text = X_SCREEN*0.7;
 		frame = 0;
+		player_text = player_win_sel(1);
 		player_winner = player_winner_sel(game->player1->id, 1);
 	}
 	else {
-		num_player_winner = 2;
-		frame = 6;
+		x_player = X_SCREEN*0.75;
+		x_text = X_SCREEN*0.3; frame = 6; player_text = player_win_sel(2);
 		player_winner = player_winner_sel(game->player2->id, 2);
 	}
 
+	menu = button_create("./sprites/buttons/menu.png", x_text, Y_SCREEN*0.55, 0.3*RESIZE_SCREEN);
 	
 	short cooldown = 3 *FPS;
+	short final_frame = frame + 6;
+
+
 
 	while (game->state == WINNER) {
 
@@ -764,17 +809,26 @@ void mlf_winner(struct mlf *game)
 			draw_image_resized(mlf_logo, X_SCREEN/2, Y_SCREEN /8, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(icon_p1, X_SCREEN*0.08, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
 			draw_image_resized(icon_p2, X_SCREEN*0.92, Y_SCREEN /8, 0.16 * RESIZE_SCREEN);
+			draw_image_resized(white_transp, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
 
 			if (cooldown == 0) {
 				button_update(menu, game->mouse_x, game->mouse_y);
 			}
-			else
+			else 
 				cooldown--;
 
-			if (frame < frame + 6)
-				frame++;
+			draw_image_resized(paint[frame], X_SCREEN/2, Y_SCREEN/2, RESIZE_SCREEN);
+			draw_image_resized(player_winner, x_player, y_player, RESIZE_SCREEN);
+			draw_image_resized(winner, x_text, Y_SCREEN*0.25, RESIZE_SCREEN);
+			draw_image_resized(player_text, x_text, Y_SCREEN*0.4, 0.3*RESIZE_SCREEN);
 
+			if (y_player >= Y_SCREEN*0.65)
+				y_player = y_player - 20;
 
+			if ((cooldown % FPS/2) == 0) {
+				if (frame < final_frame - 1)
+					frame++;
+			}
 
 			al_flip_display();	
 		}
@@ -789,15 +843,21 @@ void mlf_winner(struct mlf *game)
 		}
 	}
 
+	for (int i = 0; i < 12; i++) {
+		al_destroy_bitmap(paint[i]);
+	}
+	free(paint);
+
 	box_destroy(floor);
 	button_destroy(menu);
 	al_destroy_bitmap(mlf_logo);
 	al_destroy_bitmap(white_bar);
+	al_destroy_bitmap(white_transp);
 	al_destroy_bitmap(background);
 	al_destroy_bitmap(winner);
 	al_destroy_bitmap(icon_p1);
 	al_destroy_bitmap(icon_p2);
-	al_destroy_bitmap(menu_op);
+	al_destroy_bitmap(player_winner);
 }
 
 void mlf_update_game(struct mlf *game)

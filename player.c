@@ -164,12 +164,10 @@ void player_draw_dash(short dash, short num)
 short player_win(struct player *player1, struct player *player2)
 {
 	if (player1->hp <= 0) {
-		player2->win = player2->win + 1;
 		return 2;
 	}
 
 	if (player2->hp <= 0) {
-		player1->win = player1->win + 1;
 		return 1;
 	}
 
