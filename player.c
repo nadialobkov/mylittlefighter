@@ -73,6 +73,9 @@ void player_destroy(struct player *player)
 	if (player->hurtbox)
 		box_destroy(player->hurtbox);
 	
+	if (player->hitbox)
+		box_destroy(player->hitbox);
+
 	if (player->bitmap) {
 		for (short i = 0; i <= 28; i++) {
 			if (player->bitmap[i])
@@ -403,6 +406,13 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 			short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
 			if (player1->hurtbox->side_y != side_y) {
 				player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, player1->y, player1->hurtbox->side_x, side_y, 1);
+				if (box_collision(player1->hurtbox, player2->hurtbox)) {
+					short offset = side_y/STEPS -1;
+					player2->y = player2->y - offset*STEPS;
+					player2->hitbox->y = player2->hitbox->y - offset*STEPS;
+					player2->hurtbox->y = player2->hurtbox->y - offset*STEPS;
+				}
+
 			}
 
 

@@ -199,6 +199,7 @@ void mlf_menu_start(struct mlf *game)
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 
+	reset_game(game);
 
 	while (game->state == MENU_START) {
 		
@@ -237,7 +238,7 @@ void mlf_menu_player_sel(struct mlf *game)
 	struct button *p2_icon1 = button_create("./sprites/buttons/icon_rarity_ch.png", X_SCREEN*0.68, Y_SCREEN*0.6, 0.1 * RESIZE_SCREEN);
 	struct button *back = button_create("./sprites/buttons/back.png", X_SCREEN/12, Y_SCREEN*10/12, RESIZE_SCREEN);
 	struct button *next = button_create("./sprites/buttons/next.png", X_SCREEN*11/12, Y_SCREEN*10/12, RESIZE_SCREEN);
-	struct button *change = button_create("./sprites/buttons/change.png", X_SCREEN*0.9, Y_SCREEN*0.12, RESIZE_SCREEN);
+	struct button *change = button_create("./sprites/buttons/change.png", X_SCREEN*0.78, Y_SCREEN*0.1, 0.8 *RESIZE_SCREEN);
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 	ALLEGRO_BITMAP *choose_player_display = al_load_bitmap("./sprites/menu/choose_char.png");
@@ -263,6 +264,11 @@ void mlf_menu_player_sel(struct mlf *game)
 			draw_image_resized(mlf_logo, X_SCREEN*0.1, Y_SCREEN*0.12, 0.5 * RESIZE_SCREEN);
 			draw_image_resized(choose_player_display, X_SCREEN*0.5, Y_SCREEN*0.45, RESIZE_SCREEN);
 			draw_image_resized(text_mode, X_SCREEN*0.8, Y_SCREEN*0.05, RESIZE_SCREEN);
+			if (game->mode == PVP)
+				draw_image_resized(text_pvp, X_SCREEN*0.82, Y_SCREEN*0.1, 0.8*RESIZE_SCREEN);
+			else
+				draw_image_resized(text_bot, X_SCREEN*0.82, Y_SCREEN*0.1, 0.8*RESIZE_SCREEN);
+
 			button_update(back, game->mouse_x, game->mouse_y);
 			button_update(change, game->mouse_x, game->mouse_y);
 			button_update(p1_icon0, game->mouse_x, game->mouse_y);
@@ -292,6 +298,12 @@ void mlf_menu_player_sel(struct mlf *game)
 				if ((player1_id != -1) && (player2_id != -1))
 					game->state = MENU_BACK_SEL;
 			}
+			if (button_pressed(change, game->mouse_x, game->mouse_y, game->event)) {
+				if (game->mode == PVP)
+					game->mode = BOT;
+				else
+					game->mode = PVP;
+			}
 			if (button_pressed(p1_icon0, game->mouse_x, game->mouse_y, game->event)) {
 				player1_id = PINKIE;
 			}
@@ -311,9 +323,10 @@ void mlf_menu_player_sel(struct mlf *game)
 		}
 	}
 
-
-	game->player1 = player_create(player1_id, X_SCREEN/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
-	game->player2 = player_create(player2_id, X_SCREEN*3/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
+	if (game->state == MENU_BACK_SEL) {
+		game->player1 = player_create(player1_id, X_SCREEN/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
+		game->player2 = player_create(player2_id, X_SCREEN*3/4, Y_SCREEN*3/4, 0.5 * RESIZE_SCREEN);
+	}
 
 	button_destroy(back);
 	button_destroy(next);
@@ -571,14 +584,17 @@ void mlf_fight(struct mlf *game)
 				draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
 				button_update(pause, game->mouse_x, game->mouse_y);
 
-				//box_draw(floor, 0, 153, 51);
 				player_attack(game->player1, game->player2);
 				player_attack(game->player2, game->player1);
 				player_move(game->player1, game->player2, floor);
 				player_move(game->player2, game->player1, floor);
-				//box_draw(game->player1->hurtbox, 255, 122, 255);
-				//box_draw(game->player1->hitbox, 102, 0, 204);
-				//box_draw(game->player2->hurtbox, 255, 122, 255);
+#ifdef BOXES
+				box_draw(floor, 0, 153, 51);
+				box_draw(game->player1->hurtbox, 255, 122, 255);
+				box_draw(game->player1->hitbox, 102, 0, 204);
+				box_draw(game->player2->hurtbox, 255, 122, 255);
+				box_draw(game->player2->hitbox, 102, 0, 204);
+#endif
 				player_animation(game->player1);
 				player_animation(game->player2);
 				if (!cooldown) {

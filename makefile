@@ -12,6 +12,9 @@ all: $(PROG)
 debug: CFLAGS += -DDEBUG
 debug: $(PROG)
 
+boxes: CFLAGS += -DBOXES
+boxes: $(PROG)
+
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
