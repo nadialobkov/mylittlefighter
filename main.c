@@ -21,8 +21,9 @@ int main()
     al_install_keyboard(); // habilita entrada de eventos via teclado
 	al_install_mouse();
 
-	struct mlf *game = mlf_create_game();
 
+	struct mlf *game = mlf_create_game();
+	mlf_draw_logo(game);	
 
 	// adiciona eventos de teclado, display e tempo na fila de eventos
 	al_register_event_source(game->queue, al_get_keyboard_event_source());

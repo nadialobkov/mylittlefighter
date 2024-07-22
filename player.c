@@ -177,7 +177,7 @@ short player_win(struct player *player1, struct player *player2)
 	return 0;
 }
 
-void player_update_joystick(struct player *player1, struct player *player2, int keycode)
+void player_update_joystick(struct player *player1, struct player *player2, int keycode, short mode)
 {
 	if (keycode == ALLEGRO_KEY_A) 
 		joystick_left(player1->control);
@@ -197,22 +197,24 @@ void player_update_joystick(struct player *player1, struct player *player2, int 
 		joystick_combo(player1->control);
 	
 
-	if (keycode == ALLEGRO_KEY_LEFT)
-		joystick_left(player2->control);
-	if (keycode == ALLEGRO_KEY_RIGHT)
-		joystick_right(player2->control);
-	if (keycode == ALLEGRO_KEY_UP)
-		joystick_up(player2->control);
-	if (keycode == ALLEGRO_KEY_DOWN)
-		joystick_down(player2->control);
-	if (keycode == ALLEGRO_KEY_PAD_0) 
-		joystick_dash(player2->control);
-	if (keycode == ALLEGRO_KEY_PAD_1) 
-		joystick_hit1(player2->control);
-	if (keycode == ALLEGRO_KEY_PAD_2)
-		joystick_hit2(player2->control);
-	if (keycode == ALLEGRO_KEY_PAD_3)
-		joystick_combo(player2->control);
+	if (mode == PVP) {
+		if (keycode == ALLEGRO_KEY_LEFT)
+			joystick_left(player2->control);
+		if (keycode == ALLEGRO_KEY_RIGHT)
+			joystick_right(player2->control);
+		if (keycode == ALLEGRO_KEY_UP)
+			joystick_up(player2->control);
+		if (keycode == ALLEGRO_KEY_DOWN)
+			joystick_down(player2->control);
+		if (keycode == ALLEGRO_KEY_PAD_0) 
+			joystick_dash(player2->control);
+		if (keycode == ALLEGRO_KEY_PAD_1) 
+			joystick_hit1(player2->control);
+		if (keycode == ALLEGRO_KEY_PAD_2)
+			joystick_hit2(player2->control);
+		if (keycode == ALLEGRO_KEY_PAD_3)
+			joystick_combo(player2->control);
+	}
 	
 }	
 
@@ -341,12 +343,10 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	short in_x1 = player1->x;
 	short in_y1 = player1->y;
 
-	// movimento do player 1
 	if (player1->dash < 100)
 		player1->dash = player1->dash + 1;
 
 
-//	printf ("dash: %d \n", player1->dash);
 	if (player1->control->dash && (player1->dash == 100)) {
 		player1->state = DASH;
 	}
@@ -407,10 +407,10 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 			if (player1->hurtbox->side_y != side_y) {
 				player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, player1->y, player1->hurtbox->side_x, side_y, 1);
 				if (box_collision(player1->hurtbox, player2->hurtbox)) {
-					short offset = side_y/STEPS -1;
-					player2->y = player2->y - offset*STEPS;
-					player2->hitbox->y = player2->hitbox->y - offset*STEPS;
-					player2->hurtbox->y = player2->hurtbox->y - offset*STEPS;
+					short offset = side_y - side_y/4;
+					player2->y = player2->y - offset;
+					player2->hitbox->y = player2->hitbox->y - offset;
+					player2->hurtbox->y = player2->hurtbox->y - offset;
 				}
 
 			}
@@ -477,9 +477,81 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	
 }
 
+void player_bot(struct player *player, struct player *bot, struct box *floor, short *cooldown)
+{
+	// calcula a distancia entre os players
+	short dist_y = (bot->y - player->y);
+	if (dist_y < 0) 
+		dist_y = dist_y * (-1);
 
-// fazer funcao tipo animation state trigger
-// pega a direcao e seta o state inicial para aquela animacao
+
+	short dist_x = (bot->x - player->x);
+	if (dist_x < 0) {
+		dist_x = dist_x * (-1);
+		if (dist_y < 2*STEPS && bot->state != ATTACK2)
+			bot->dir = RIGHT;
+	}
+	else 
+		if (dist_y < 2*STEPS && bot->state != ATTACK2)
+			bot->dir = LEFT;
+
+	dist_x = dist_x - bot->hurtbox->side_x;
+
+
+	if (*cooldown == 0) {
+		joystick_reset(bot->control);
+		bot->control->active = ACTIVE;
+	}
+	else 
+		*cooldown = *cooldown - 1;
+
+	if ((dist_x <= 3*STEPS) && (dist_y <= 2*STEPS)) {
+		if (bot->state == IDLE && box_collision(bot->hurtbox, floor) && !(*cooldown)) {
+			short action = rand() % 4;
+			switch (action) {
+				case 0:
+					bot->control->up = ACTIVE;
+					break;
+				case 1:
+					bot->control->down = ACTIVE;
+					*cooldown = 5;
+					break;
+				case 2:
+					bot->control->hit1 = ACTIVE;
+					break;
+				case 3:
+					bot->control->hit2 = ACTIVE;
+					break;
+			}
+		}
+		if (bot->frame == HIT1_5) {
+			short combo = rand() % 2;
+			if (combo) {
+				bot->control->combo = ACTIVE;
+				bot->state = COMBO;
+			}
+		}
+	}
+	else {
+		if (!(*cooldown)) {
+			short dash = rand() % 6;
+			if (dash == 0) {
+				bot->control->dash = ACTIVE;
+				*cooldown = 3;
+			}
+		}
+
+		if (bot->dir == RIGHT)
+			bot->control->right = ACTIVE;
+		else
+			bot->control->left = ACTIVE;
+	}
+
+
+
+}
+
+
 void player_animation(struct player *player)
 {
 	switch (player->frame) {

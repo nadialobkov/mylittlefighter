@@ -79,11 +79,13 @@ void player_draw_hp(short hp, short num);
 
 void player_draw_dash(short dash, short num);
 
-void player_update_joystick(struct player *player1, struct player *player2, int keycode);
+void player_update_joystick(struct player *player1, struct player *player2, int keycode, short mode);
 
 void player_attack(struct player *player1, struct player *player2);
 
 void player_move(struct player *player1, struct player *player2, struct box *floor);
+
+void player_bot(struct player *player, struct player *bot, struct box *floor, short *cooldown);
 
 void player_animation(struct player *player);
 

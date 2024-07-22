@@ -8,6 +8,7 @@
 #include "player.h"
 #include "button.h"
 
+
 void draw_image_resized(ALLEGRO_BITMAP *bitmap, short x, short y, float resize)
 {
 	short side_x = al_get_bitmap_width(bitmap);
@@ -17,6 +18,12 @@ void draw_image_resized(ALLEGRO_BITMAP *bitmap, short x, short y, float resize)
 	short new_y = y - side_y/(2/resize);
 
 	al_draw_scaled_bitmap(bitmap, 0, 0, side_x, side_y, new_x, new_y, side_x * resize, side_y * resize, 0);	
+}
+
+void mlf_draw_logo(struct mlf *game)
+{
+	ALLEGRO_BITMAP *logo =  al_load_bitmap("./sprites/menu/mlf_logo.png");
+	al_set_display_icon(game->disp, logo);
 }
 
 
@@ -448,6 +455,7 @@ void mlf_start_fight(struct mlf *game)
 
 	if (game->player1->win == 2 || game->player2->win == 2)
 		game->state = WINNER;
+
 	
 	short cooldown = 5 *FPS;
 
@@ -472,6 +480,7 @@ void mlf_start_fight(struct mlf *game)
 
 				player_animation(game->player1);
 				player_animation(game->player2);
+				draw_scoreboard(game->player1->win, game->player2->win);
 
 				if (cooldown == 0) {
 					game->state = FIGHT;
@@ -559,10 +568,9 @@ void mlf_fight(struct mlf *game)
 	ALLEGRO_BITMAP *icon_p1 = player_icon_sel(game->player1->id, 1);
 	ALLEGRO_BITMAP *icon_p2 = player_icon_sel(game->player2->id, 2);
 	
-	game->player1->control->active = 1;
-	game->player2->control->active = 1;
 
 	short cooldown = 0;
+	short cooldown_bot = 0;
 
 	while (game->state == FIGHT) {
 
@@ -584,10 +592,12 @@ void mlf_fight(struct mlf *game)
 				draw_image_resized(background, X_SCREEN/2, Y_SCREEN /2, RESIZE_SCREEN);
 				button_update(pause, game->mouse_x, game->mouse_y);
 
+
 				player_attack(game->player1, game->player2);
 				player_attack(game->player2, game->player1);
 				player_move(game->player1, game->player2, floor);
 				player_move(game->player2, game->player1, floor);
+
 #ifdef BOXES
 				box_draw(floor, 0, 153, 51);
 				box_draw(game->player1->hurtbox, 255, 122, 255);
@@ -598,6 +608,8 @@ void mlf_fight(struct mlf *game)
 				player_animation(game->player1);
 				player_animation(game->player2);
 				if (!cooldown) {
+					if (game->mode == BOT)
+						player_bot(game->player1, game->player2, floor, &cooldown_bot);
 					player_update_state(game->player1);
 					player_update_state(game->player2);
 					cooldown = 1;
@@ -625,9 +637,14 @@ void mlf_fight(struct mlf *game)
 			al_flip_display();	
 		}
 
-		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN) || (game->event.type == ALLEGRO_EVENT_KEY_UP)) {
-			player_update_joystick(game->player1, game->player2, game->event.keyboard.keycode);
+		if ((game->event.type == ALLEGRO_EVENT_KEY_DOWN)) {
+			game->player1->control->active = 1;
+			game->player2->control->active = 1;
+			player_update_joystick(game->player1, game->player2, game->event.keyboard.keycode, game->mode);
 		}
+		if (game->event.type == ALLEGRO_EVENT_KEY_UP)
+			player_update_joystick(game->player1, game->player2, game->event.keyboard.keycode, game->mode);
+
 
 		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_pressed(pause, game->mouse_x, game->mouse_y, game->event)) {
@@ -711,7 +728,9 @@ void mlf_player_win(struct mlf *game)
 					else
 						game->player2->win = game->player2->win + 1;
 
-					game->round = game->round + 1;
+					if (game->round <= 2)
+						game->round = game->round + 1;
+
 					game->state = START_FIGHT;
 				}
 
@@ -803,7 +822,9 @@ void mlf_winner(struct mlf *game)
 	}
 	else {
 		x_player = X_SCREEN*0.75;
-		x_text = X_SCREEN*0.3; frame = 6; player_text = player_win_sel(2);
+		x_text = X_SCREEN*0.3; 
+		frame = 6; 
+		player_text = player_win_sel(2);
 		player_winner = player_winner_sel(game->player2->id, 2);
 	}
 

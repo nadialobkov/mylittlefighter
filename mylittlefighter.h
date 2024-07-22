@@ -26,6 +26,8 @@ enum Backgrounds {
 	CLOUDSDALE,
 };
 
+// ESTRUTURA ===========================================
+
 struct mlf {
 	enum Game_state state;
 	short round;
@@ -42,20 +44,28 @@ struct mlf {
 	short mouse_y;
 };
 
-// ============================================
+// FUNCOES =============================================
 
-
+// aloca estrutura e a inicializa
 struct mlf *mlf_create_game();
 
+// muda jogo para suas configuracoes iniciais
+void mlf_reset_game(struct mlf *game);
+
+// desaloca estrutura
 void mlf_destroy_game(struct mlf *game);
 
-void draw_image(char *filename, short x, short y, float resize);
+// desenha logo mlf no icone do display
+void mlf_draw_logo(struct mlf *game);
+
+// atualiza estado do jogo
+void mlf_update_game(struct mlf *game);
+
+
+// funcoes que tratam cada estado ---------------------
 
 void mlf_menu_start(struct mlf *game);
 
 void mlf_menu_player_sel(struct mlf *game);
-
-void mlf_update_game(struct mlf *game);
-
 
 #endif
