@@ -1,10 +1,11 @@
 #ifndef _JOYSTICK_H_
 #define _JOYSTICK_H_
 
+#define ACTIVE 1
+#define DISABLED 0
+
 // ESTRUTURA ==========================================
 
-// flags
-// 0 inativo, 1 ativo
 struct joystick {
 	char right;
 	char left;

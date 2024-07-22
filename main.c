@@ -15,17 +15,16 @@
 
 int main()
 {
-    al_init(); // inicia requisitos da biblioteca
+    al_init(); 
 	al_init_image_addon();
-	al_init_primitives_addon(); // biblioteca de figuras basicas
-    al_install_keyboard(); // habilita entrada de eventos via teclado
+	al_init_primitives_addon(); 
+    al_install_keyboard(); 
 	al_install_mouse();
 
 
 	struct mlf *game = mlf_create_game();
 	mlf_draw_logo(game);	
 
-	// adiciona eventos de teclado, display e tempo na fila de eventos
 	al_register_event_source(game->queue, al_get_keyboard_event_source());
 	al_register_event_source(game->queue, al_get_display_event_source(game->disp));
 	al_register_event_source(game->queue, al_get_timer_event_source(game->timer));

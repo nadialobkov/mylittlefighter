@@ -9,6 +9,10 @@
 #include "button.h"
 
 
+
+// FUNCOES DE DESENHO =========================================================================================
+
+
 void draw_image_resized(ALLEGRO_BITMAP *bitmap, short x, short y, float resize)
 {
 	short side_x = al_get_bitmap_width(bitmap);
@@ -20,11 +24,35 @@ void draw_image_resized(ALLEGRO_BITMAP *bitmap, short x, short y, float resize)
 	al_draw_scaled_bitmap(bitmap, 0, 0, side_x, side_y, new_x, new_y, side_x * resize, side_y * resize, 0);	
 }
 
-void mlf_draw_logo(struct mlf *game)
+void draw_scoreboard(short score1, short score2)
 {
-	ALLEGRO_BITMAP *logo =  al_load_bitmap("./sprites/menu/mlf_logo.png");
-	al_set_display_icon(game->disp, logo);
+	ALLEGRO_BITMAP *text0 = al_load_bitmap("./sprites/text/0.png");
+	ALLEGRO_BITMAP *text1 = al_load_bitmap("./sprites/text/1.png");
+	ALLEGRO_BITMAP *text2 = al_load_bitmap("./sprites/text/2.png");
+	ALLEGRO_BITMAP *textX = al_load_bitmap("./sprites/text/x.png");
+
+	draw_image_resized(textX, X_SCREEN*0.5, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+
+	if (score1 == 0)
+		draw_image_resized(text0, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score1 == 1)
+		draw_image_resized(text1, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score1 == 2)
+		draw_image_resized(text2, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 0)
+		draw_image_resized(text0, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 1)
+		draw_image_resized(text1, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	if (score2 == 2)
+		draw_image_resized(text2, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
+	
+	al_destroy_bitmap(text0);
+	al_destroy_bitmap(text1);
+	al_destroy_bitmap(text2);
+	al_destroy_bitmap(textX);
 }
+
+// SELETORES DE BITMAPS ===================================================================================
 
 
 ALLEGRO_BITMAP *background_sel(enum Backgrounds back)
@@ -128,40 +156,23 @@ ALLEGRO_BITMAP *player_winner_sel(short id, short num)
 	return player;
 
 }
+// ======================================================================================================
+// FUNCOES BIBLIOTECA MY LITTLE FIGHTER =================================================================
+// ======================================================================================================
 
-void draw_scoreboard(short score1, short score2)
+
+void mlf_draw_logo(struct mlf *game)
 {
-	ALLEGRO_BITMAP *text0 = al_load_bitmap("./sprites/text/0.png");
-	ALLEGRO_BITMAP *text1 = al_load_bitmap("./sprites/text/1.png");
-	ALLEGRO_BITMAP *text2 = al_load_bitmap("./sprites/text/2.png");
-	ALLEGRO_BITMAP *textX = al_load_bitmap("./sprites/text/x.png");
-
-	draw_image_resized(textX, X_SCREEN*0.5, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-
-	if (score1 == 0)
-		draw_image_resized(text0, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	if (score1 == 1)
-		draw_image_resized(text1, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	if (score1 == 2)
-		draw_image_resized(text2, X_SCREEN*0.48, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	if (score2 == 0)
-		draw_image_resized(text0, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	if (score2 == 1)
-		draw_image_resized(text1, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	if (score2 == 2)
-		draw_image_resized(text2, X_SCREEN*0.52, Y_SCREEN*0.3, 0.1*RESIZE_SCREEN);
-	
-	al_destroy_bitmap(text0);
-	al_destroy_bitmap(text1);
-	al_destroy_bitmap(text2);
-	al_destroy_bitmap(textX);
+	ALLEGRO_BITMAP *logo =  al_load_bitmap("./sprites/menu/mlf_logo.png");
+	al_set_display_icon(game->disp, logo);
 }
 
-void reset_game(struct mlf *game)
+void mlf_reset_game(struct mlf *game)
 {
 	game->round = 1;
 	game->paused = 0;
 	game->mode = PVP;
+	game->back = CASTLE;
 
 	if (!game->player1)
 		player_destroy(game->player1);
@@ -183,7 +194,7 @@ struct mlf *mlf_create_game()
 	game->mouse_x = 0;
 	game->mouse_y = 0;
 
-	reset_game(game);
+	mlf_reset_game(game);
 		
 	return game;
 }
@@ -206,7 +217,7 @@ void mlf_menu_start(struct mlf *game)
 	ALLEGRO_BITMAP *castle = al_load_bitmap("./sprites/backgrounds/castle.png");
 	ALLEGRO_BITMAP *mlf_logo = al_load_bitmap("./sprites/menu/mlf_logo.png");
 
-	reset_game(game);
+	mlf_reset_game(game);
 
 	while (game->state == MENU_START) {
 		
@@ -527,7 +538,7 @@ void mlf_start_fight(struct mlf *game)
 					game->paused = 0;
 				}
 				if (button_pressed(menu, game->mouse_x, game->mouse_y, game->event)) {
-					reset_game(game);
+					mlf_reset_game(game);
 				}
 			}
 		}
@@ -655,7 +666,7 @@ void mlf_fight(struct mlf *game)
 					game->paused = 0;
 				}
 				if (button_pressed(menu, game->mouse_x, game->mouse_y, game->event)) {
-					reset_game(game);
+					mlf_reset_game(game);
 				}
 			}
 		}
@@ -761,7 +772,7 @@ void mlf_player_win(struct mlf *game)
 					game->paused = 0;
 				}
 				if (button_pressed(menu, game->mouse_x, game->mouse_y, game->event)) {
-					reset_game(game);
+					mlf_reset_game(game);
 				}
 			}
 		}
@@ -883,7 +894,7 @@ void mlf_winner(struct mlf *game)
 
 		if (game->event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_pressed(menu, game->mouse_x, game->mouse_y, game->event)) {
-				reset_game(game);
+				mlf_reset_game(game);
 			}
 		}
 		if (game->event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {

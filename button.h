@@ -1,6 +1,8 @@
 #ifndef _BUTTON_H_
 #define _BUTTON_H_
 
+// ESTRUTURA =========================================================================
+
 struct button {
 	short x;
 	short y;
@@ -9,6 +11,9 @@ struct button {
 	float resize;
 	ALLEGRO_BITMAP *bitmap;
 };
+
+// FUNCOES ============================================================================
+
 
 struct button *button_create(char *filename, short x, short y, float resize);
 

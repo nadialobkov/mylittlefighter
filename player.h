@@ -12,7 +12,7 @@ enum Pony {
 	RARITY,
 };
 
-// estados do personagem
+// subestados
 enum Frames {
 	IDLE1,
 	RUN1,RUN2,RUN3,RUN4,
@@ -26,6 +26,7 @@ enum Frames {
 	COMBO1,COMBO2,COMBO3,
 };
 
+// estados principais
 enum State {
 	IDLE,
 	RUN,
@@ -73,7 +74,11 @@ struct player {
 
 struct player *player_create(enum Pony id, short x, short y, float resize);
 
+void player_init(struct player *player, short num);
+
 void player_destroy(struct player *playerD);
+
+short player_win(struct player *player1, struct player *player2);
 
 void player_draw_hp(short hp, short num);
 
@@ -90,14 +95,6 @@ void player_bot(struct player *player, struct player *bot, struct box *floor, sh
 void player_animation(struct player *player);
 
 void player_update_state(struct player *player);
-
-short player_win(struct player *player1, struct player *player2);
-
-void player_init(struct player *player, short num);
-
-
-//void player_update_position(struct player *playerP);
-
 
 
 #endif

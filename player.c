@@ -9,6 +9,8 @@
 #include "box.h"
 #include "joystick.h"
 
+
+// carrega os bitmaps dos frames das poneis no vetor de bitmap da estrutura player
 ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap, enum Pony player_id)
 {
 	char *string = malloc(sizeof(char) * 30);
@@ -27,7 +29,6 @@ ALLEGRO_BITMAP **player_load_bitmap(ALLEGRO_BITMAP  **bitmap, enum Pony player_i
 		}
 	}
 	
-
 	free(string);
 	return (bitmap);
 }
@@ -164,6 +165,8 @@ void player_draw_dash(short dash, short num)
 		al_draw_filled_rectangle(X_SCREEN*0.55, Y_SCREEN*0.15, X_SCREEN*0.70 - size, Y_SCREEN*0.17, al_map_rgb(r, g, 255));		
 }
 
+// retorna o numero do player que ganhou a rodada
+// retorna zero caso ninguem ganhou ainda
 short player_win(struct player *player1, struct player *player2)
 {
 	if (player1->hp <= 0) {
@@ -224,9 +227,10 @@ void player_attack(struct player *player1, struct player *player2)
 	if (!player1->control->active || !player2->control->active)
 		return;
 
-	// player nao pode atacar durante pulo ou descida
+	// player nao pode atacar se estiver em algum estado especifico
 	if ((player1->state != UP) && (player1->state != FALL) && (player1->state != DASH) && (player1->state != STUNNED)) {
 
+		// atualiza estado do ataque
 		if (player1->control->hit1 && player1->state != ATTACK2) {
 			player1->state = ATTACK1;
 		}
@@ -309,15 +313,11 @@ void player_attack(struct player *player1, struct player *player2)
 				else
 					player2->hurtbox->x = player2->hurtbox->x - 2*move;
 			}
-
 			if (player1->frame == COMBO2) {
 				player1->hitbox->active = ACTIVE;
 				player1->hitbox->x = player1->hitbox->x + move*3;
 				player1->hitbox->y = player1->hitbox->y - STEPS*3/2;
-
-				
 			}
-
 			if (player1->frame == COMBO3) {
 				player1->hitbox->active = !ACTIVE;
 				player1->hitbox->x = player1->hurtbox->x;
@@ -339,13 +339,14 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 	if (player1->state == ATTACK1 || player1->state == ATTACK2 || player1->state == STUNNED || player1->state == COMBO)
 		return;
 
-	// salva posicao inicial
+	// salva posicao inicial para calcular o deslocamento
 	short in_x1 = player1->x;
 	short in_y1 = player1->y;
 
+	// DASH ---------------------------------------------------------------------------------------------------------
+
 	if (player1->dash < 100)
 		player1->dash = player1->dash + 1;
-
 
 	if (player1->control->dash && (player1->dash == 100)) {
 		player1->state = DASH;
@@ -356,12 +357,14 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 		if (!player1->control->dash || player1->dash <= 0)
 			player1->state = IDLE;
 
+		// diminui a hurtbox do player
 		short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
 		short new_y = player1->y + side_y /4;
 		player1->hurtbox = box_update(player1->hurtbox, player1->hurtbox->x, new_y, player1->hurtbox->side_x, side_y /2, 1);
 
 		player1->dash = player1->dash - 10;
 		
+		// analisa para qual direcao deve ser feito o dash
 		short dir;
 		if (player1->control->right) {
 			player1->dir = RIGHT;
@@ -376,6 +379,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 				dir = 0;
 
 		float dash_vel = 2;
+		
 		if (dir != 0) {
 			player1->hurtbox->x = player1->hurtbox->x + dash_vel * dir * STEPS;
 			if (box_valid_position(player1->hurtbox) && box_valid_position(player2->hurtbox)){
@@ -394,6 +398,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 		}
 	}		
 	else {	
+		// DOWN ----------------------------------------------------------------------------------------------------------
 
 		if (player1->control->down && box_collision(player1->hurtbox, floor)) {
 			short side_y = al_get_bitmap_height(player1->bitmap[0]) * player1->resize*2/3;
@@ -414,7 +419,7 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 				}
 
 			}
-
+			// RIGHT --------------------------------------------------------------------------------------------------------
 
 			if (player1->control->right) {
 				player1->hurtbox->x = player1->hurtbox->x +  STEPS;
@@ -426,6 +431,8 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 					player1->hurtbox->x = player1->hurtbox->x -  STEPS;
 			}
 
+			// LEFT --------------------------------------------------------------------------------------------------------
+
 			if (player1->control->left) {
 				player1->hurtbox->x = player1->hurtbox->x -  STEPS;
 				if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)){
@@ -436,11 +443,13 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 					player1->hurtbox->x = player1->hurtbox->x +  STEPS;
 			}
 
+			// UP ----------------------------------------------------------------------------------------------------------
+
 			// pulo inicia com a velocidade maxima 
 			if (box_collision(player1->hurtbox, floor))
 				player1->vel = VEL_MAX;
 
-			// caso estiver pulando 
+			// caso estiver pulando (coltrole ativo ou no ar)
 			if ((player1->control->up) || !box_collision(player1->hurtbox, floor)) {
 				player1->hurtbox->y = player1->hurtbox->y - player1->vel * STEPS/2;
 				if (box_valid_position(player1->hurtbox) && !box_collision(player1->hurtbox, player2->hurtbox)) {
@@ -453,7 +462,9 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 
 			}
 
-			// classifica stateecao final
+			// ATUALIZACAO DO ESTADO --------------------------------------------------------------------------------------
+
+			// classifica estado final atraves do deslocamento
 			if (player1->y < in_y1)
 				player1->state = UP;
 			else
@@ -479,11 +490,10 @@ void player_move(struct player *player1, struct player *player2, struct box *flo
 
 void player_bot(struct player *player, struct player *bot, struct box *floor, short *cooldown)
 {
-	// calcula a distancia entre os players
+	// calcula a distancia entre os players e atualiza direcao
 	short dist_y = (bot->y - player->y);
 	if (dist_y < 0) 
 		dist_y = dist_y * (-1);
-
 
 	short dist_x = (bot->x - player->x);
 	if (dist_x < 0) {
@@ -505,9 +515,11 @@ void player_bot(struct player *player, struct player *bot, struct box *floor, sh
 	else 
 		*cooldown = *cooldown - 1;
 
+	// caso os players estiverem perto
 	if ((dist_x <= 3*STEPS) && (dist_y <= 2*STEPS)) {
+		// se estiver parado no chao
 		if (bot->state == IDLE && box_collision(bot->hurtbox, floor) && !(*cooldown)) {
-			short action = rand() % 4;
+			short action = rand() % 4; // sorteia acao
 			switch (action) {
 				case 0:
 					bot->control->up = ACTIVE;
@@ -525,16 +537,17 @@ void player_bot(struct player *player, struct player *bot, struct box *floor, sh
 			}
 		}
 		if (bot->frame == HIT1_5) {
-			short combo = rand() % 2;
+			short combo = rand() % 2; // 50% de chance de combo
 			if (combo) {
 				bot->control->combo = ACTIVE;
 				bot->state = COMBO;
 			}
 		}
 	}
+	// caso nao estiver perto vai correr ate o player
 	else {
 		if (!(*cooldown)) {
-			short dash = rand() % 6;
+			short dash = rand() % 6; // 16% de chance de efetuar o dash
 			if (dash == 0) {
 				bot->control->dash = ACTIVE;
 				*cooldown = 3;
@@ -546,9 +559,6 @@ void player_bot(struct player *player, struct player *bot, struct box *floor, sh
 		else
 			bot->control->left = ACTIVE;
 	}
-
-
-
 }
 
 
@@ -676,9 +686,6 @@ void player_animation(struct player *player)
 
 void player_update_state(struct player *player)
 {
-//	printf("player state %d \n", player->state);
-//	printf("player frame %d \n", player->frame);
-
 	switch (player->frame) {
 
 		case IDLE1:

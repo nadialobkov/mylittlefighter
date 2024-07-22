@@ -68,4 +68,15 @@ void mlf_menu_start(struct mlf *game);
 
 void mlf_menu_player_sel(struct mlf *game);
 
+void mlf_menu_back_sel(struct mlf *game);
+
+void mlf_start_fight(struct mlf *game);
+
+void mlf_fight(struct mlf *game);
+
+void mlf_player_win(struct mlf *game);
+
+void mlf_winner(struct mlf *game);
+	
+
 #endif
