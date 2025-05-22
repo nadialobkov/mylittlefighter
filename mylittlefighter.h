@@ -2,9 +2,9 @@
 #define _MYLITTLEFIGHTER_H_
 
 
-#define X_SCREEN 1280
-#define Y_SCREEN 720
-#define RESIZE_SCREEN 0.67
+#define X_SCREEN 1920
+#define Y_SCREEN 1080
+#define RESIZE_SCREEN 1
 #define FPS 24
 #define PVP 0
 #define BOT 1
